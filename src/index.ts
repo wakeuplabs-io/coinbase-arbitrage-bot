@@ -284,7 +284,7 @@ const handleTargetReached = async (): Promise<void> => {
   log(`🎯 Target reached in ${txCount} trades | Runtime: ${new Date(runtimeSeconds * 1000).toISOString().substr(14, 5)}`);
   log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
   log(`   Net Profit:    ${sessionProfit.toFixed(2)} USDC`);
-  log(`   ROI:           ${roi.toFixed(2).padStart(8)} %`);
+  log(`   ROI:           ${(roi.toFixed(2) + ' %').padStart(10)}`);
   log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
   // Execute x402 payment for premium content
