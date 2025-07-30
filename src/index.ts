@@ -64,7 +64,7 @@ if (config.environment.useMocks) {
 // Display bot configuration and startup information
 console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 console.log(` Network: ${config.network.name} | Wallet: ${config.address}`);
-console.log(` Main token (USDC): ${config.tokens.USDC} | Start: ${Number(formatUnits(amountIn,6)).toFixed(2)} USDC`);
+console.log(` Main token ( ${config.tokens.MAIN_TOKEN_SYMBOL}): ${config.tokens.MAIN_TOKEN_ADDRESS} | Start: ${Number(formatUnits(amountIn,6)).toFixed(2)} USDC`);
 console.log(` Target profit: +${Number(formatUnits(BigInt(balanceOut), 6)).toFixed(2)} (${((Number(balanceOut) / Number(amountIn)) * 100).toFixed(0)} %)`);
 console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
@@ -75,7 +75,7 @@ console.log("━━━━━━━━━━━━━━━━━━━━━━�
 
 // Initialize wallet balance (only for mock wallets)
 if (config.environment.useMocks && wallet.addToBalance) {
-  wallet.addToBalance(config.tokens.USDC as `0x${string}`, Number(amountIn));
+  wallet.addToBalance(config.tokens.MAIN_TOKEN_ADDRESS as `0x${string}`, Number(amountIn));
 }
 
 // Constants for better code readability
@@ -104,8 +104,8 @@ const estimateArbitrageOpportunity = async (inputAmount: bigint): Promise<TradeR
     // Step 1: Get price from CDP (USDC → WETH)
     const wethFromCDP = await cdpProvider.estimatePrice(
       inputAmount, 
-      config.tokens.USDC as `0x${string}`, 
-      config.tokens.WETH as `0x${string}`
+      config.tokens.MAIN_TOKEN_ADDRESS as `0x${string}`, 
+      config.tokens.SECONDARY_TOKEN_ADDRESS as `0x${string}`
     );
 
     if (!wethFromCDP) {
@@ -115,8 +115,8 @@ const estimateArbitrageOpportunity = async (inputAmount: bigint): Promise<TradeR
     // Step 2: Get price from DEX (WETH → USDC)
     const usdcFromDEX = await customDEXProvider.estimatePrice(
       wethFromCDP, 
-      config.tokens.WETH as `0x${string}`, 
-      config.tokens.USDC as `0x${string}`
+      config.tokens.SECONDARY_TOKEN_ADDRESS as `0x${string}`, 
+      config.tokens.MAIN_TOKEN_ADDRESS as `0x${string}`
     );
 
     if (!usdcFromDEX) {
@@ -157,7 +157,7 @@ const estimateArbitrageOpportunity = async (inputAmount: bigint): Promise<TradeR
 const executeArbitrageTrade = async (trade: TradeResult): Promise<TradeResult> => {
   // For mock wallets, simulate the trade
   if (wallet.addToBalance) {
-    wallet.addToBalance(config.tokens.USDC as `0x${string}`, Number(trade.netProfit));
+    wallet.addToBalance(config.tokens.MAIN_TOKEN_ADDRESS as `0x${string}`, Number(trade.netProfit));
     return trade;
   }
 
@@ -165,9 +165,9 @@ const executeArbitrageTrade = async (trade: TradeResult): Promise<TradeResult> =
     // Step 1: Execute CDP swap (USDC → WETH)
     const wethReceived = await cdpProvider.executeSwap(
       trade.amountIn,
-      config.tokens.USDC as `0x${string}`,
+      config.tokens.MAIN_TOKEN_ADDRESS as `0x${string}`,
       'USDC',
-      config.tokens.WETH as `0x${string}`
+      config.tokens.SECONDARY_TOKEN_ADDRESS as `0x${string}`
     );
 
     if (!wethReceived) {
@@ -177,9 +177,9 @@ const executeArbitrageTrade = async (trade: TradeResult): Promise<TradeResult> =
     // Step 2: Execute DEX swap (WETH → USDC)
     const finalUSDC = await customDEXProvider.executeSwap(
       wethReceived,
-      config.tokens.WETH as `0x${string}`,
+      config.tokens.SECONDARY_TOKEN_ADDRESS as `0x${string}`,
       'WETH',
-      config.tokens.USDC as `0x${string}`
+      config.tokens.MAIN_TOKEN_ADDRESS as `0x${string}`
     );
 
     if (!finalUSDC) {
@@ -254,7 +254,7 @@ const runBot = async (): Promise<void> => {
   }
 
   // Step 3: Update session metrics
-  const currentBalance = await wallet.getBalance(config.tokens.USDC as `0x${string}`);
+  const currentBalance = await wallet.getBalance(config.tokens.MAIN_TOKEN_ADDRESS as `0x${string}`);
   if (finalTrade.netProfit > 0) {
     sessionProfit += Number(formatUnits(finalTrade.netProfit, USDC_DECIMALS));
   }

@@ -39,10 +39,10 @@ export const config = {
   // Token Addresses
   /** Base network token contract addresses */
   tokens: {
-    /** Wrapped Ethereum token address (Base network) */
-    WETH: process.env.WETH_ADDRESS || '0x4200000000000000000000000000000000000006',
-    /** USD Coin token address (Base network) */
-    USDC: process.env.USDC_ADDRESS || '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+    MAIN_TOKEN_ADDRESS: process.env.MAIN_TOKEN_ADDRESS || '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+    MAIN_TOKEN_SYMBOL: process.env.MAIN_TOKEN || 'USDC',
+    SECONDARY_TOKEN_ADDRESS: process.env.SECONDARY_TOKEN_ADDRESS || '0x4200000000000000000000000000000000000006',
+    SECONDARY_TOKEN_SYMBOL: process.env.SECONDARY || 'WETH',
   },
   
   // Contract Addresses
