@@ -7,7 +7,7 @@ import { config } from '../config';
 export class Web3Wallet implements Wallet {
     async getBalance(token: Address): Promise<number> {
         const client = createPublicClient({
-            chain: config.network.name === "base" ? base: mainnet,
+            chain: config.network.name === "base" ? base : mainnet,
             transport: http()
         });
         const balance = await client.readContract({
