@@ -7,7 +7,7 @@ import { SwapProvider } from '../interfaces/swapProvider';
 import { abi as swapRouterAbi } from '@uniswap/v3-periphery/artifacts/contracts/SwapRouter.sol/SwapRouter.json';
 import { abi as erc20Abi } from '@uniswap/v2-core/build/ERC20.json';
 
-// Data (Mainnet)
+// Uniswap V3 Contract Addresses and Constants (Mainnet)
 const SWAP_ROUTER = '0xE592427A0AEce92De3Edee1F18E0157C05861564';
 const QUOTER_ADDRESS = '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6';
 const FEE = 3000;
