@@ -91,6 +91,9 @@ export class UniswapProvider implements SwapProvider {
       }],
     });
 
-    return;
+    // Extract the output amount from the swap result
+    const outputAmount = BigInt(swapResult.logs[0]?.data || 0);
+
+    return outputAmount;
   }
 }
