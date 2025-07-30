@@ -22,7 +22,7 @@ export interface SwapProvider {
    * @param tokenOut - Output token address or symbol
    * @returns Promise resolving to output amount in smallest unit, or undefined if estimation fails
    */
-  estimatePrice(amountIn: bigint, tokenIn: string, tokenOut: string): Promise<bigint | undefined>;
+  estimatePrice(amountIn: bigint, tokenIn: Address, tokenOut: Address): Promise<bigint | undefined>;
 
   /**
    * Execute a token swap on the decentralized exchange.
