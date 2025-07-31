@@ -25,7 +25,7 @@ export class MockCDPProvider implements SwapProvider {
      * @param tokenOut - Output token identifier
      * @returns Promise resolving to estimated output amount
      */
-    estimatePrice(amountIn: bigint, tokenIn: string, tokenOut: string): Promise<bigint | undefined> {
+    estimatePrice(amountIn: bigint, tokenIn: Address, tokenOut: Address): Promise<bigint | undefined> {
         // Simulate a random price estimation between 1.01 and 1.05 times the input amount
         const randomFactor = 1.01 + Math.random() * 0.04;
         const estimatedPrice = BigInt(Math.round(Number(amountIn) * randomFactor));
@@ -43,18 +43,6 @@ export class MockCDPProvider implements SwapProvider {
      * @returns Promise resolving to 0 (mock implementation)
      */
     executeSwap(amountIn: bigint, tokenIn: Address, tokenInSymbol: string, tokenOut: Address): Promise<bigint | undefined> {
-        return Promise.resolve(0n);
-    }
-    
-    /**
-     * Mock gas fee estimation (always returns 0 for testing).
-     * 
-     * @param amountIn - Input amount
-     * @param tokenIn - Input token address
-     * @param tokenOut - Output token address
-     * @returns Promise resolving to 0 (mock implementation)
-     */
-    estimateGasFee(amountIn: bigint, tokenIn: Address, tokenOut: Address): Promise<bigint | undefined> {
         return Promise.resolve(0n);
     }
     

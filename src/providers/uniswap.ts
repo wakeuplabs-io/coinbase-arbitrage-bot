@@ -17,25 +17,6 @@ const amountOutMin = 0n;
 export class UniswapProvider implements SwapProvider {
   readonly name = 'Uniswap v3';
 
-  async estimateGasFee(
-    amountIn: bigint,
-    tokenIn: Address,
-    tokenOut: Address
-  ): Promise<bigint | undefined> {
-    const account = privateKeyToAccount(config.privateKey as `0x${string}`);
-
-    const publicClient = createPublicClient({
-      chain: mainnet,
-      transport: http(config.public_node),
-    });
-
-    const gasPrice = await publicClient.getGasPrice();
-    const gasEstimate = 180_000n;
-    const estimatedFee = gasPrice * gasEstimate;
-
-    return BigInt(estimatedFee);
-  }
-
   async estimatePrice(amountIn: bigint, tokenIn: Address, tokenOut: Address): Promise<bigint | undefined> {
     const client = createPublicClient({
       chain: mainnet,
@@ -75,7 +56,7 @@ export class UniswapProvider implements SwapProvider {
     });
 
     // Step 2: Execute the swap
-    await client.writeContract({
+    const swapResult = await client.writeContract({
       abi: swapRouterAbi,
       address: SWAP_ROUTER,
       functionName: 'exactInputSingle',
@@ -91,9 +72,6 @@ export class UniswapProvider implements SwapProvider {
       }],
     });
 
-    // Extract the output amount from the swap result
-    const outputAmount = BigInt(swapResult.logs[0]?.data || 0);
-
-    return outputAmount;
+    return 0n;
   }
 }

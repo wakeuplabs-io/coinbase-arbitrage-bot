@@ -3,41 +3,97 @@
  * 
  * This module centralizes all application configuration settings,
  * loading them from environment variables with sensible defaults.
+ * Uses Zod for runtime validation to ensure configuration integrity.
  * 
  * @module config
  */
 
 import dotenv from 'dotenv';
+import { z } from 'zod';
+
 dotenv.config();
 
 /**
- * Main application configuration object.
- * Contains all settings needed for the arbitrage bot operation.
+ * Zod schema for configuration validation
  */
-export const config = {
+const configSchema = z.object({
   // Wallet & Authentication
-  /** Private key for wallet transactions (required for production) */
+  privateKey: z.string().regex(/^0x[a-fA-F0-9]{64}$/, 'Private key must be in 0x format with 64 hex characters'),
+  address: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Wallet address must be in 0x format with 40 hex characters'),
+  account_name: z.string().min(1, 'Account name is required'),
+  public_node: z.string().url('Public node must be a valid URL').optional().or(z.literal('')),
+  
+  // CDP Settings
+  cdp: z.object({
+    apiKeyId: z.string().min(1, 'CDP API key ID is required'),
+    apiKeySecret: z.string().min(1, 'CDP API key secret is required'),
+    walletSecret: z.string().min(1, 'CDP wallet secret is required'),
+  }),
+  
+  // Token Addresses
+  tokens: z.object({
+    MAIN_TOKEN_ADDRESS: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid main token address format'),
+    MAIN_TOKEN_SYMBOL: z.string().min(1, 'Main token symbol is required'),
+    SECONDARY_TOKEN_ADDRESS: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid secondary token address format'),
+    SECONDARY_TOKEN_SYMBOL: z.string().min(1, 'Secondary token symbol is required'),
+  }),
+  
+  // Contract Addresses
+  contracts: z.object({
+    uniswapQuoter: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid Uniswap quoter address format'),
+    uniswapRouter: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid Uniswap router address format'),
+    permit2: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid Permit2 address format'),
+  }),
+  
+  // Trading Parameters
+  trading: z.object({
+    amountIn: z.number().positive('Amount in must be positive'),
+    profitThreshold: z.number().min(0, 'Profit threshold must be non-negative'),
+    frequencyMs: z.number().positive('Frequency must be positive'),
+    slippageBps: z.number().min(0).max(10000, 'Slippage must be between 0 and 10000 basis points'),
+    swapFee: z.number().min(0, 'Swap fee must be non-negative'),
+    targetBalanceOut: z.number().positive('Target balance out must be positive'),
+  }),
+  
+  // Network Settings
+  network: z.object({
+    name: z.string().min(1, 'Network name is required'),
+  }),
+  
+  // x402 Payment Settings
+  x402: z.object({
+    paymentUrl: z.string().url('X402 payment URL must be a valid URL'),
+  }),
+
+  // Environment Settings
+  environment: z.object({
+    useMocks: z.boolean(),
+  }),
+});
+
+/**
+ * Type inference from the Zod schema
+ */
+export type Config = z.infer<typeof configSchema>;
+
+/**
+ * Raw configuration object from environment variables
+ */
+const rawConfig = {
+  // Wallet & Authentication
   privateKey: process.env.PRIVATE_KEY || '',
-  /** Wallet address for the trading account */
   address: process.env.ADDRESS || '',
-  /** Account name identifier */
   account_name: process.env.ACCOUNT_NAME || 'test-account',
-  /** Public node RPC URL for blockchain connection */
   public_node: process.env.PUBLIC_NODE || '',
   
   // CDP Settings
-  /** Coinbase Developer Platform configuration */
   cdp: {
-    /** CDP API key identifier */
     apiKeyId: process.env.CDP_API_KEY_ID || '',
-    /** CDP API key secret */
     apiKeySecret: process.env.CDP_API_KEY_SECRET || '',
-    /** CDP wallet secret for authentication */
     walletSecret: process.env.CDP_WALLET_SECRET || '',
   },
   
   // Token Addresses
-  /** Base network token contract addresses */
   tokens: {
     MAIN_TOKEN_ADDRESS: process.env.MAIN_TOKEN_ADDRESS || '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
     MAIN_TOKEN_SYMBOL: process.env.MAIN_TOKEN || 'USDC',
@@ -46,51 +102,60 @@ export const config = {
   },
   
   // Contract Addresses
-  /** Smart contract addresses for DeFi protocols */
   contracts: {
-    /** Uniswap V3 Quoter contract for price estimation */
     uniswapQuoter: process.env.UNISWAP_QUOTER_ADDRESS || '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6',
-    /** Uniswap V3 Router contract for trade execution */
     uniswapRouter: process.env.UNISWAP_ROUTER_ADDRESS || '0xE592427A0AEce92De3Edee1F18E0157C05861564',
-    /** Permit2 contract for token approvals */
     permit2: process.env.PERMIT2_ADDRESS || '0x000000000022D473030F116dDEE9F6B43aC78BA3',
   },
   
   // Trading Parameters
-  /** Core trading configuration */
   trading: {
-    /** Amount for swap in token units */
     amountIn: parseInt(process.env.AMOUNT_IN || '1'),
-    /** Minimum profit threshold percentage to execute trades */
     profitThreshold: parseFloat(process.env.PROFIT_THRESHOLD || '0.1'),
-    /** Frequency of bot execution in milliseconds */
     frequencyMs: parseInt(process.env.FREQUENCY_MS || '10000'),
-    /** Maximum slippage tolerance in basis points */
     slippageBps: parseInt(process.env.SLIPPAGE_BPS || '100'),
-    /** Trading fee for swaps in basis points */
     swapFee: parseInt(process.env.SWAP_FEE || '500'),
-    /** Target profit amount to stop trading */
     targetBalanceOut: parseFloat(process.env.TARGET_BALANCE_OUT || '1'),
   },
   
   // Network Settings
-  /** Blockchain network configuration */
   network: {
-    /** Target blockchain network name */
     name: process.env.NETWORK || 'base',
   },
   
   // x402 Payment Settings
-  /** Configuration for x402 micropayment protocol */
   x402: {
-    /** URL endpoint for x402 payment requests */
     paymentUrl: process.env.X402_PAYMENT_URL || 'http://localhost:4021/weather',
   },
 
   // Environment Settings
-  /** Environment and deployment configuration */
   environment: {
-    /** Toggle between mock and production implementations */
     useMocks: process.env.USE_MOCKS === 'true' || false,
   },
 };
+
+/**
+ * Validated and type-safe configuration object.
+ * This will throw an error if any required configuration is missing or invalid.
+ */
+function createConfig(): Config {
+  try {
+    return configSchema.parse(rawConfig);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      console.error('Configuration validation failed:');
+      error.errors.forEach((err) => {
+        console.error(`- ${err.path.join('.')}: ${err.message}`);
+      });
+      process.exit(1);
+    }
+    throw error;
+  }
+}
+
+/**
+ * Main application configuration object.
+ * Contains all settings needed for the arbitrage bot operation.
+ * Validated at runtime using Zod for type safety and data integrity.
+ */
+export const config = createConfig();

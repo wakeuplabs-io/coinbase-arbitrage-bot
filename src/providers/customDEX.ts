@@ -2,7 +2,7 @@ import { SwapProvider } from '../interfaces/swapProvider';
 import { type Address } from "viem";
 import { CDPProvider } from './cdp';
 
-const SWAP_INCREMENT = 1.1;
+const PRICE_MARKUP_MULTIPLIER = 1.1;
 
 export class CustomDEXProvider implements SwapProvider {
 
@@ -17,14 +17,14 @@ export class CustomDEXProvider implements SwapProvider {
           return undefined;
         }
         if (Math.random() < 0.30) {
-          return BigInt(Math.floor(Number(estimation) * SWAP_INCREMENT));
+          return BigInt(Math.floor(Number(estimation) * PRICE_MARKUP_MULTIPLIER));
         }
     
         return estimation; 
       }
     
       async executeSwap(amountIn: bigint, tokenIn: Address, tokenInSymbol: string, tokenOut: Address): Promise<bigint | undefined> {
-        const incrementedAmountIn = BigInt(Math.ceil(Number(amountIn) * SWAP_INCREMENT));
+        const incrementedAmountIn = BigInt(Math.ceil(Number(amountIn) * PRICE_MARKUP_MULTIPLIER));
         return this.cdpProvider.executeSwap(incrementedAmountIn, tokenIn, tokenInSymbol, tokenOut);
       }
     
