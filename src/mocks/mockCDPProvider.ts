@@ -38,11 +38,10 @@ export class MockCDPProvider implements SwapProvider {
      * 
      * @param amountIn - Input amount
      * @param tokenIn - Input token address
-     * @param tokenInSymbol - Input token symbol
      * @param tokenOut - Output token address
      * @returns Promise resolving to 0 (mock implementation)
      */
-    executeSwap(amountIn: bigint, tokenIn: Address, tokenInSymbol: string, tokenOut: Address): Promise<bigint | undefined> {
+    executeSwap(amountIn: bigint, tokenIn: Address, tokenOut: Address): Promise<bigint | undefined> {
         const estimatedPrice = this.estimatePrice(amountIn, tokenIn, tokenOut);
         return estimatedPrice;
     }

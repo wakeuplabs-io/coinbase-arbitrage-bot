@@ -15,7 +15,7 @@ export interface Wallet {
   /**
    * Get the current balance of a specific token.
    * 
-   * @param token - The token symbol or identifier
+   * @param token - The token address
    * @returns The current balance as a number
    */
   getBalance(token: Address): Promise<number>;

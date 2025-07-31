@@ -23,9 +23,9 @@ export class CustomDEXProvider implements SwapProvider {
         return estimation; 
       }
     
-      async executeSwap(amountIn: bigint, tokenIn: Address, tokenInSymbol: string, tokenOut: Address): Promise<bigint | undefined> {
+      async executeSwap(amountIn: bigint, tokenIn: Address, tokenOut: Address): Promise<bigint | undefined> {
         const incrementedAmountIn = BigInt(Math.ceil(Number(amountIn) * PRICE_MARKUP_MULTIPLIER));
-        return this.cdpProvider.executeSwap(incrementedAmountIn, tokenIn, tokenInSymbol, tokenOut);
+        return this.cdpProvider.executeSwap(incrementedAmountIn, tokenIn, tokenOut);
       }
     
     readonly name = 'Custom DEX';

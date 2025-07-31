@@ -10,6 +10,7 @@
 import { formatUnits } from 'viem';
 import { config } from '../config';
 import { TradeResult } from './arbitrageService';
+import { TokenUtils } from '../utils/tokenUtils';
 
 /**
  * Bot statistics interface for logging
@@ -25,7 +26,7 @@ export interface BotStats {
  * Arbitrage logger service that handles all bot output formatting
  */
 export class ArbitrageLogger {
-  private readonly USDC_DECIMALS = 6;
+  private readonly MAIN_TOKEN_DECIMALS = TokenUtils.getDecimals(config.tokens.MAIN_TOKEN_SYMBOL);
 
   /**
    * Display bot startup information and configuration
@@ -67,9 +68,9 @@ export class ArbitrageLogger {
     });
 
     const protocols = `${cdpProviderName} → ${dexProviderName}`;
-    const amounts = `${Number(formatUnits(result.amountIn, this.USDC_DECIMALS)).toFixed(2)} → ${Number(formatUnits(result.amountOut, this.USDC_DECIMALS)).toFixed(2)}`;
+    const amounts = `${Number(formatUnits(result.amountIn, this.MAIN_TOKEN_DECIMALS)).toFixed(2)} → ${Number(formatUnits(result.amountOut, this.MAIN_TOKEN_DECIMALS)).toFixed(2)}`;
     const pnl = `${result.profitPercentage >= 0 ? '+' : ''}${result.profitPercentage.toFixed(3)}%`;
-    const profit = `${result.netProfit >= 0n ? '+' : ''}${Number(formatUnits(result.netProfit, this.USDC_DECIMALS)).toFixed(6)}`;
+    const profit = `${result.netProfit >= 0n ? '+' : ''}${Number(formatUnits(result.netProfit, this.MAIN_TOKEN_DECIMALS)).toFixed(6)}`;
     const balance = `${sessionProfit.toFixed(6)}`;
     const action = willExecute ? "🚀 SWAP EXECUTED" : "⏸️  NO SWAP";
 

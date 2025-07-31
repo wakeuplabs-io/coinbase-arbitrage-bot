@@ -36,7 +36,6 @@ export class UniswapProvider implements SwapProvider {
   async executeSwap(
     amountIn: bigint,
     tokenIn: Address,
-    tokenInSymbol: string, 
     tokenOut: Address
   ): Promise<bigint | undefined> {
     const account = privateKeyToAccount(config.privateKey as `0x${string}`);
@@ -47,7 +46,6 @@ export class UniswapProvider implements SwapProvider {
       transport: http(config.public_node),
     });
 
-    // Step 1: Approve WETH to the router
     await client.writeContract({
       abi: erc20Abi,
       address: tokenIn,
@@ -55,7 +53,6 @@ export class UniswapProvider implements SwapProvider {
       args: [SWAP_ROUTER, amountIn],
     });
 
-    // Step 2: Execute the swap
     const swapResult = await client.writeContract({
       abi: swapRouterAbi,
       address: SWAP_ROUTER,

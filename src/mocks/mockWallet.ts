@@ -39,7 +39,7 @@ export class MockWallet implements Wallet {
     /**
      * Get the current balance of a token.
      * 
-     * @param token - Token symbol or identifier
+     * @param token - Token address
      * @returns Current balance, or 0 if token not found
      */
     async getBalance(token: string): Promise<number> {

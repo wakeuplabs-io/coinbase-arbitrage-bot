@@ -11,6 +11,7 @@ import { formatUnits, parseUnits } from 'viem';
 import { config } from '../config';
 import { AppDependencies } from '../container';
 import { ArbitrageLogger } from './arbitrageLogger';
+import { TokenUtils } from '../utils/tokenUtils';
 
 /**
  * Trade execution result interface for type safety
@@ -35,10 +36,9 @@ export class ArbitrageService {
   private sessionProfit = 0;
   private loop: NodeJS.Timeout | undefined;
 
-  // Convert target balance to USDC format (6 decimals)
-  private readonly balanceOut = parseUnits(config.trading.targetBalanceOut.toString(), 6);
-  private readonly amountIn = parseUnits(config.trading.amountIn.toString(), 6);
-  private readonly USDC_DECIMALS = 6;
+  private readonly balanceOut = parseUnits(config.trading.targetBalanceOut.toString(), TokenUtils.getDecimals(config.tokens.MAIN_TOKEN_SYMBOL));
+  private readonly amountIn = parseUnits(config.trading.amountIn.toString(), TokenUtils.getDecimals(config.tokens.MAIN_TOKEN_SYMBOL));
+  private readonly MAIN_TOKEN_DECIMALS = TokenUtils.getDecimals(config.tokens.MAIN_TOKEN_SYMBOL);
 
   constructor(dependencies: AppDependencies) {
     this.dependencies = dependencies;
@@ -83,7 +83,6 @@ export class ArbitrageService {
     try {
       const inputAmount = this.amountIn;
 
-      // Step 1: Get WETH from CDP
       this.logger.logPriceEstimation("WETH from CDP");
       const wethFromCDP = await this.dependencies.cdpProvider.estimatePrice(
         inputAmount, 
@@ -96,7 +95,6 @@ export class ArbitrageService {
         return;
       }
 
-      // Step 2: Get USDC from DEX using the WETH amount
       this.logger.logPriceEstimation("USDC from DEX");
       const usdcFromDEX = await this.dependencies.customDEXProvider.estimatePrice(
         wethFromCDP, 
@@ -109,20 +107,16 @@ export class ArbitrageService {
         return;
       }
 
-      // Calculate profit
       const netProfit = usdcFromDEX - inputAmount;
-      const profitPercentage = (Number(formatUnits(netProfit, this.USDC_DECIMALS)) / Number(formatUnits(inputAmount, this.USDC_DECIMALS))) * 100;
+      const profitPercentage = (Number(formatUnits(netProfit, this.MAIN_TOKEN_DECIMALS)) / Number(formatUnits(inputAmount, this.MAIN_TOKEN_DECIMALS))) * 100;
       
-      // Check if profit exceeds threshold
-      const profitThresholdAmount = parseUnits(config.trading.profitThreshold.toString(), this.USDC_DECIMALS);
+      const profitThresholdAmount = parseUnits(config.trading.profitThreshold.toString(), this.MAIN_TOKEN_DECIMALS);
       const shouldExecute = netProfit >= profitThresholdAmount;
 
-      // Execute trade if profitable
       if (shouldExecute) {
         await this.executeTrade(inputAmount, wethFromCDP, usdcFromDEX, netProfit);
       }
 
-      // Log the trade opportunity
       this.logger.logTradeOpportunity({
         amountIn: inputAmount,
         amountOut: usdcFromDEX,
@@ -131,8 +125,7 @@ export class ArbitrageService {
         gasUsed: 0n // Will be updated if trade is executed
       }, shouldExecute, this.txCount, this.sessionProfit, this.dependencies.cdpProvider.name, this.dependencies.customDEXProvider.name);
 
-      // Check if target profit reached
-      if (this.sessionProfit >= Number(formatUnits(this.balanceOut, this.USDC_DECIMALS))) {
+      if (this.sessionProfit >= Number(formatUnits(this.balanceOut, this.MAIN_TOKEN_DECIMALS))) {
         this.logger.logTargetReached();
         await this.executeX402Payment();
         this.stop();
@@ -155,11 +148,9 @@ export class ArbitrageService {
     try {
       this.logger.logTradeExecution();
 
-      // Execute first swap: USDC -> WETH via CDP
       const actualWeth = await this.dependencies.cdpProvider.executeSwap(
         inputAmount,
         config.tokens.MAIN_TOKEN_ADDRESS as `0x${string}`,
-        config.tokens.MAIN_TOKEN_SYMBOL,
         config.tokens.SECONDARY_TOKEN_ADDRESS as `0x${string}`
       );
 
@@ -168,11 +159,9 @@ export class ArbitrageService {
         return;
       }
 
-      // Execute second swap: WETH -> USDC via DEX
       const actualOutput = await this.dependencies.customDEXProvider.executeSwap(
         actualWeth,
         config.tokens.SECONDARY_TOKEN_ADDRESS as `0x${string}`,
-        config.tokens.SECONDARY_TOKEN_SYMBOL,
         config.tokens.MAIN_TOKEN_ADDRESS as `0x${string}`
       );
 
@@ -181,9 +170,8 @@ export class ArbitrageService {
         return;
       }
 
-      // Calculate actual profit
       const actualProfit = actualOutput - inputAmount;
-      const actualProfitUSDC = Number(formatUnits(actualProfit, this.USDC_DECIMALS));
+      const actualProfitUSDC = Number(formatUnits(actualProfit, this.MAIN_TOKEN_DECIMALS));
       
       this.sessionProfit += actualProfitUSDC;
       this.txCount++;
