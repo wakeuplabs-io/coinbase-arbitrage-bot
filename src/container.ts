@@ -11,6 +11,7 @@ import { config } from './config';
 import { SwapProvider } from './interfaces/swapProvider';
 import { ContentPayment } from './interfaces/contentPayment';
 import { Wallet } from './interfaces/wallet';
+import { ArbitrageLogger } from './services/arbitrageLogger';
 
 // Mock implementations
 import { MockCDPProvider } from './mocks/mockCDPProvider';
@@ -134,6 +135,7 @@ export class Container {
  * Create and configure the application container based on environment
  */
 export function createContainer(): Container {
+  const logger = new ArbitrageLogger();
   const factory = config.environment.useMocks 
     ? new MockDependencyFactory()
     : new ProductionDependencyFactory();
@@ -142,7 +144,7 @@ export function createContainer(): Container {
   
   // Log which implementations are being used
   const mode = config.environment.useMocks ? "mock" : "production";
-  console.log(`🔧 Container configured with ${mode} implementations`);
+  logger.logInfo(`Container configured with ${mode} implementations`);
   
   return container;
 }

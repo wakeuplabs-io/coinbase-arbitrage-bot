@@ -15,14 +15,15 @@
 import { config } from './config';
 import { container } from './container';
 import { ArbitrageService } from './services/arbitrageService';
+import { ArbitrageLogger } from './services/arbitrageLogger';
 
 /**
  * Main application entry point
  */
 async function main(): Promise<void> {
   try {
-    console.log("🚀 Starting DeFi Arbitrage Bot...");
-    console.log(`📊 Environment: ${config.environment.useMocks ? 'Mock' : 'Production'} mode`);
+    const logger = new ArbitrageLogger();
+    logger.displayEnvironmentInfo();
     
     // Get dependencies from the container
     const dependencies = container.getDependencies();
@@ -36,15 +37,15 @@ async function main(): Promise<void> {
     
     // Handle graceful shutdown
     process.on('SIGINT', () => {
-      console.log('\n🛑 Received SIGINT, shutting down gracefully...');
-      arbitrageService.stop();
       const stats = arbitrageService.getStats();
-      console.log(`📊 Final stats: ${stats.txCount} transactions, ${stats.sessionProfit.toFixed(6)} USDC profit`);
+      logger.logGracefulShutdown('SIGINT', stats);
+      arbitrageService.stop();
       process.exit(0);
     });
 
     process.on('SIGTERM', () => {
-      console.log('\n🛑 Received SIGTERM, shutting down gracefully...');
+      const stats = arbitrageService.getStats();
+      logger.logGracefulShutdown('SIGTERM', stats);
       arbitrageService.stop();
       process.exit(0);
     });

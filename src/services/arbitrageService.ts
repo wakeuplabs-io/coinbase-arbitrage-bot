@@ -10,6 +10,7 @@
 import { formatUnits, parseUnits } from 'viem';
 import { config } from '../config';
 import { AppDependencies } from '../container';
+import { ArbitrageLogger } from './arbitrageLogger';
 
 /**
  * Trade execution result interface for type safety
@@ -28,6 +29,7 @@ export interface TradeResult {
  */
 export class ArbitrageService {
   private dependencies: AppDependencies;
+  private logger: ArbitrageLogger;
   private txCount = 0;
   private startTime = Date.now();
   private sessionProfit = 0;
@@ -40,13 +42,15 @@ export class ArbitrageService {
 
   constructor(dependencies: AppDependencies) {
     this.dependencies = dependencies;
+    this.logger = new ArbitrageLogger();
   }
 
   /**
    * Initialize the arbitrage service
    */
   async initialize(): Promise<void> {
-    this.displayStartupInfo();
+    this.logger.displayStartupInfo(this.amountIn, this.balanceOut);
+    this.logger.displayTradingHeader();
     
     // Initialize wallet balance (only for mock wallets)
     if (config.environment.useMocks && this.dependencies.wallet.addToBalance) {
@@ -61,7 +65,7 @@ export class ArbitrageService {
    * Start the arbitrage bot with periodic trading checks
    */
   start(): void {
-    console.log("🚀 Starting arbitrage bot...");
+    this.logger.logBotStart();
     this.executeArbitrageCycle();
     
     this.loop = setInterval(() => {
@@ -76,7 +80,7 @@ export class ArbitrageService {
     if (this.loop) {
       clearInterval(this.loop);
       this.loop = undefined;
-      console.log("🛑 Arbitrage bot stopped");
+      this.logger.logBotStop();
     }
   }
 
@@ -88,7 +92,7 @@ export class ArbitrageService {
       const inputAmount = this.amountIn;
 
       // Step 1: Get WETH from CDP
-      console.log("Getting WETH from CDP...");
+      this.logger.logPriceEstimation("WETH from CDP");
       const wethFromCDP = await this.dependencies.cdpProvider.estimatePrice(
         inputAmount, 
         config.tokens.MAIN_TOKEN_ADDRESS as `0x${string}`, 
@@ -96,12 +100,12 @@ export class ArbitrageService {
       );
 
       if (!wethFromCDP) {
-        console.error("Failed to get WETH price from CDP");
+        this.logger.logError("Failed to get WETH price from CDP");
         return;
       }
 
       // Step 2: Get USDC from DEX using the WETH amount
-      console.log("Getting USDC from DEX...");
+      this.logger.logPriceEstimation("USDC from DEX");
       const usdcFromDEX = await this.dependencies.customDEXProvider.estimatePrice(
         wethFromCDP, 
         config.tokens.SECONDARY_TOKEN_ADDRESS as `0x${string}`, 
@@ -109,7 +113,7 @@ export class ArbitrageService {
       );
 
       if (!usdcFromDEX) {
-        console.error("Failed to get USDC price from DEX");
+        this.logger.logError("Failed to get USDC price from DEX");
         return;
       }
 
@@ -127,22 +131,23 @@ export class ArbitrageService {
       }
 
       // Log the trade opportunity
-      this.logTradeOpportunity({
+      this.logger.logTradeOpportunity({
         amountIn: inputAmount,
         amountOut: usdcFromDEX,
         netProfit,
         profitPercentage,
         gasUsed: 0n // Will be updated if trade is executed
-      }, shouldExecute);
+      }, shouldExecute, this.txCount, this.sessionProfit, this.dependencies.cdpProvider.name, this.dependencies.customDEXProvider.name);
 
       // Check if target profit reached
       if (this.sessionProfit >= Number(formatUnits(this.balanceOut, this.USDC_DECIMALS))) {
-        console.log(`🎯 Target profit reached! Stopping bot...`);
+        this.logger.logTargetReached();
+        await this.executeX402Payment();
         this.stop();
       }
 
     } catch (error) {
-      console.error("Error in arbitrage cycle:", error);
+      this.logger.logError("Error in arbitrage cycle", error);
     }
   }
 
@@ -156,7 +161,7 @@ export class ArbitrageService {
     expectedProfit: bigint
   ): Promise<void> {
     try {
-      console.log("🔄 Executing profitable trade...");
+      this.logger.logTradeExecution();
 
       // Execute first swap: USDC -> WETH via CDP
       const actualWeth = await this.dependencies.cdpProvider.executeSwap(
@@ -167,7 +172,7 @@ export class ArbitrageService {
       );
 
       if (!actualWeth) {
-        console.error("First swap failed");
+        this.logger.logError("First swap failed");
         return;
       }
 
@@ -180,7 +185,7 @@ export class ArbitrageService {
       );
 
       if (!actualOutput) {
-        console.error("Second swap failed");
+        this.logger.logError("Second swap failed");
         return;
       }
 
@@ -191,49 +196,29 @@ export class ArbitrageService {
       this.sessionProfit += actualProfitUSDC;
       this.txCount++;
 
-      console.log(`✅ Trade executed successfully! Profit: ${actualProfitUSDC.toFixed(6)} USDC`);
+      this.logger.logTradeSuccess(actualProfitUSDC);
 
     } catch (error) {
-      console.error("Error executing trade:", error);
+      this.logger.logError("Error executing trade", error);
     }
   }
 
   /**
-   * Log trade opportunity with formatted output
+   * Execute x402 payment for premium content
    */
-  private logTradeOpportunity(result: TradeResult, willExecute: boolean): void {
-    const timestamp = new Date().toLocaleString('en-US', { 
-      month: '2-digit', 
-      day: '2-digit', 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      second: '2-digit' 
-    });
-
-    const protocols = `${this.dependencies.cdpProvider.name} → ${this.dependencies.customDEXProvider.name}`;
-    const amounts = `${Number(formatUnits(result.amountIn, this.USDC_DECIMALS)).toFixed(2)} → ${Number(formatUnits(result.amountOut, this.USDC_DECIMALS)).toFixed(2)}`;
-    const pnl = `${result.profitPercentage >= 0 ? '+' : ''}${result.profitPercentage.toFixed(3)}%`;
-    const profit = `${result.netProfit >= 0n ? '+' : ''}${Number(formatUnits(result.netProfit, this.USDC_DECIMALS)).toFixed(6)}`;
-    const balance = `${this.sessionProfit.toFixed(6)}`;
-    const action = willExecute ? "🚀 SWAP EXECUTED" : "⏸️  NO SWAP";
-
-    console.log(` ${timestamp} | ${this.txCount.toString().padStart(2)} | ${protocols.padEnd(20)} | ${amounts.padEnd(11)} | ${pnl.padEnd(7)} ${profit.padStart(8)} | ${balance.padStart(7)} | ${action}`);
-  }
-
-  /**
-   * Display startup information
-   */
-  private displayStartupInfo(): void {
-    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    console.log(` Network: ${config.network.name} | Wallet: ${config.address}`);
-    console.log(` Main token ( ${config.tokens.MAIN_TOKEN_SYMBOL}): ${config.tokens.MAIN_TOKEN_ADDRESS} | Start: ${Number(formatUnits(this.amountIn, 6)).toFixed(2)} USDC`);
-    console.log(` Target profit: +${Number(formatUnits(BigInt(this.balanceOut), 6)).toFixed(2)} (${((Number(this.balanceOut) / Number(this.amountIn)) * 100).toFixed(0)} %)`);
-    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-
-    // Display trading log header
-    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    console.log(" Date                | # | Protocols | In → Out    | PnL            | Balance | Profit     ");
-    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  private async executeX402Payment(): Promise<void> {
+    try {
+      this.logger.logX402PaymentStart();
+      const x402Result = await this.dependencies.buyer.buyContent(config.x402.paymentUrl);
+      
+      if (x402Result) {
+        this.logger.logX402PaymentSuccess(x402Result);
+      } else {
+        this.logger.logX402PaymentWarning("Payment completed but no content received");
+      }
+    } catch (error) {
+      this.logger.logError("Failed to execute x402 payment", error);
+    }
   }
 
   /**
@@ -246,5 +231,12 @@ export class ArbitrageService {
       uptime: Date.now() - this.startTime,
       isRunning: this.loop !== undefined
     };
+  }
+
+  /**
+   * Display final statistics (exposed for external use)
+   */
+  displayFinalStats(): void {
+    this.logger.displayFinalStats(this.getStats());
   }
 }
