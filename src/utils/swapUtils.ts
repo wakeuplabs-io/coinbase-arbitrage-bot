@@ -4,6 +4,11 @@
  * @returns true if swap is valid, false if there are issues
  */
 export function validateSwapQuote(swapQuote: any): boolean {
+  // Handle undefined/null input
+  if (!swapQuote) {
+    return true;
+  }
+  
   let isValid = true;
   
   // Check balance issues
