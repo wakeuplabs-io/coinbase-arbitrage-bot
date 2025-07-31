@@ -19,13 +19,4 @@ export interface Wallet {
    * @returns The current balance as a number
    */
   getBalance(token: Address): Promise<number>;
-  
-  /**
-   * Add to the balance of a specific token (optional for production wallets).
-   * This method is primarily used in mock implementations for testing.
-   * 
-   * @param token - The token symbol or identifier
-   * @param amount - The amount to add to the balance
-   */
-  addToBalance?(token: Address, amount: number): void;
 }

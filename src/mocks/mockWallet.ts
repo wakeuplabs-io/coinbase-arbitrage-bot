@@ -9,6 +9,8 @@
  */
 
 import { Wallet } from "../interfaces/wallet";
+import { config } from "../config";
+import { parseUnits, formatUnits } from "viem";
 
 /**
  * Mock wallet implementation for testing and development.
@@ -17,6 +19,22 @@ import { Wallet } from "../interfaces/wallet";
 export class MockWallet implements Wallet {
     /** In-memory storage for token balances */
     private balances: Record<string, number> = {};
+
+    constructor() {
+        this.initializeBalances();
+    }
+
+    /**
+     * Initialize wallet with default balances for testing
+     */
+    private initializeBalances(): void {
+        // Initialize with sufficient USDC balance for trading
+        const initialAmount = parseUnits(config.trading.amountIn.toString(), 6);
+        const initialAmountFormatted = Number(formatUnits(initialAmount, 6));
+        
+        this.balances[config.tokens.MAIN_TOKEN_ADDRESS] = initialAmountFormatted * 10; // 10x the trading amount
+        this.balances[config.tokens.SECONDARY_TOKEN_ADDRESS] = 0; // Start with no WETH
+    }
 
     /**
      * Get the current balance of a token.
@@ -28,15 +46,6 @@ export class MockWallet implements Wallet {
         return this.balances[token] || 0;
     }
 
-    /**
-     * Add amount to the balance of a specific token.
-     * 
-     * @param token - Token symbol or identifier
-     * @param amount - Amount to add to the balance
-     */
-    async addToBalance(token: string, amount: number) {
-        this.balances[token] = await this.getBalance(token) + amount;
-    }
 }   
 
 

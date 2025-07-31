@@ -51,14 +51,6 @@ export class ArbitrageService {
   async initialize(): Promise<void> {
     this.logger.displayStartupInfo(this.amountIn, this.balanceOut);
     this.logger.displayTradingHeader();
-    
-    // Initialize wallet balance (only for mock wallets)
-    if (config.environment.useMocks && this.dependencies.wallet.addToBalance) {
-      this.dependencies.wallet.addToBalance(
-        config.tokens.MAIN_TOKEN_ADDRESS as `0x${string}`, 
-        Number(this.amountIn)
-      );
-    }
   }
 
   /**
