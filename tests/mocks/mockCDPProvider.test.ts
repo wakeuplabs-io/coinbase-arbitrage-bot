@@ -18,11 +18,11 @@ describe('MockCDPProvider', () => {
 
       expect(estimatedPrice).toBeDefined();
       expect(estimatedPrice).toBeGreaterThan(inputAmount); // Should be more than input
-      
+
       // Should be between 1.01x and 1.05x of input amount
-      const minExpected = inputAmount * 101n / 100n; // 1.01x
-      const maxExpected = inputAmount * 105n / 100n; // 1.05x
-      
+      const minExpected = (inputAmount * 101n) / 100n; // 1.01x
+      const maxExpected = (inputAmount * 105n) / 100n; // 1.05x
+
       expect(estimatedPrice).toBeGreaterThanOrEqual(minExpected);
       expect(estimatedPrice).toBeLessThanOrEqual(maxExpected);
     });
@@ -37,13 +37,13 @@ describe('MockCDPProvider', () => {
 
       expect(price1).toBeDefined();
       expect(price2).toBeDefined();
-      
+
       // Due to randomness, values should likely be different
       // We'll run multiple calls to increase the probability
       const prices = await Promise.all(
-        Array(10).fill(0).map(() => 
-          mockCDPProvider.estimatePrice(inputAmount, tokenIn, tokenOut)
-        )
+        Array(10)
+          .fill(0)
+          .map(() => mockCDPProvider.estimatePrice(inputAmount, tokenIn, tokenOut)),
       );
 
       // Not all prices should be identical (very low probability with random factor)
@@ -71,7 +71,7 @@ describe('MockCDPProvider', () => {
 
       expect(estimatedPrice).toBeDefined();
       expect(estimatedPrice).toBeGreaterThan(inputAmount);
-      
+
       // Verify the multiplication doesn't cause overflow issues
       expect(typeof estimatedPrice).toBe('bigint');
     });

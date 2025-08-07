@@ -6,7 +6,7 @@ describe('SwapUtils', () => {
       const validSwapQuote = {
         amountIn: '1000000',
         amountOut: '950000',
-        priceImpact: '0.02'
+        priceImpact: '0.02',
       };
 
       const result = swapUtils.validateSwapQuote(validSwapQuote);
@@ -21,21 +21,21 @@ describe('SwapUtils', () => {
           balance: {
             currentBalance: '500000',
             requiredBalance: '1000000',
-            token: 'USDC'
-          }
-        }
+            token: 'USDC',
+          },
+        },
       };
 
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       const result = swapUtils.validateSwapQuote(swapQuoteWithBalanceIssues);
-      
+
       expect(result).toBe(false);
-      expect(consoleSpy).toHaveBeenCalledWith("❌ Balance Issues:");
-      expect(consoleSpy).toHaveBeenCalledWith("   Current: 500000");
-      expect(consoleSpy).toHaveBeenCalledWith("   Required: 1000000");
-      expect(consoleSpy).toHaveBeenCalledWith("   Token: USDC");
-      
+      expect(consoleSpy).toHaveBeenCalledWith('❌ Balance Issues:');
+      expect(consoleSpy).toHaveBeenCalledWith('   Current: 500000');
+      expect(consoleSpy).toHaveBeenCalledWith('   Required: 1000000');
+      expect(consoleSpy).toHaveBeenCalledWith('   Token: USDC');
+
       consoleSpy.mockRestore();
     });
 
@@ -47,21 +47,23 @@ describe('SwapUtils', () => {
           allowance: {
             currentAllowance: '0',
             requiredAllowance: '1000000',
-            spender: '0x1234567890123456789012345678901234567890'
-          }
-        }
+            spender: '0x1234567890123456789012345678901234567890',
+          },
+        },
       };
 
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       const result = swapUtils.validateSwapQuote(swapQuoteWithAllowanceIssues);
-      
+
       expect(result).toBe(false);
-      expect(consoleSpy).toHaveBeenCalledWith("❌ Allowance Issues:");
-      expect(consoleSpy).toHaveBeenCalledWith("   Current: 0");
-      expect(consoleSpy).toHaveBeenCalledWith("   Required: 1000000");
-      expect(consoleSpy).toHaveBeenCalledWith("   Spender: 0x1234567890123456789012345678901234567890");
-      
+      expect(consoleSpy).toHaveBeenCalledWith('❌ Allowance Issues:');
+      expect(consoleSpy).toHaveBeenCalledWith('   Current: 0');
+      expect(consoleSpy).toHaveBeenCalledWith('   Required: 1000000');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '   Spender: 0x1234567890123456789012345678901234567890',
+      );
+
       consoleSpy.mockRestore();
     });
 
@@ -70,17 +72,19 @@ describe('SwapUtils', () => {
         amountIn: '1000000',
         amountOut: '950000',
         issues: {
-          simulationIncomplete: true
-        }
+          simulationIncomplete: true,
+        },
       };
 
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       const result = swapUtils.validateSwapQuote(swapQuoteWithSimulationWarning);
-      
+
       expect(result).toBe(true); // Should still be valid, just a warning
-      expect(consoleSpy).toHaveBeenCalledWith("⚠️ WARNING: Simulation incomplete - transaction may fail");
-      
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '⚠️ WARNING: Simulation incomplete - transaction may fail',
+      );
+
       consoleSpy.mockRestore();
     });
 
@@ -92,26 +96,28 @@ describe('SwapUtils', () => {
           balance: {
             currentBalance: '500000',
             requiredBalance: '1000000',
-            token: 'USDC'
+            token: 'USDC',
           },
           allowance: {
             currentAllowance: '0',
             requiredAllowance: '1000000',
-            spender: '0x1234567890123456789012345678901234567890'
+            spender: '0x1234567890123456789012345678901234567890',
           },
-          simulationIncomplete: true
-        }
+          simulationIncomplete: true,
+        },
       };
 
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       const result = swapUtils.validateSwapQuote(swapQuoteWithMultipleIssues);
-      
+
       expect(result).toBe(false);
-      expect(consoleSpy).toHaveBeenCalledWith("❌ Balance Issues:");
-      expect(consoleSpy).toHaveBeenCalledWith("❌ Allowance Issues:");
-      expect(consoleSpy).toHaveBeenCalledWith("⚠️ WARNING: Simulation incomplete - transaction may fail");
-      
+      expect(consoleSpy).toHaveBeenCalledWith('❌ Balance Issues:');
+      expect(consoleSpy).toHaveBeenCalledWith('❌ Allowance Issues:');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '⚠️ WARNING: Simulation incomplete - transaction may fail',
+      );
+
       consoleSpy.mockRestore();
     });
 
@@ -119,7 +125,7 @@ describe('SwapUtils', () => {
       const swapQuoteWithoutIssues = {
         amountIn: '1000000',
         amountOut: '950000',
-        issues: null
+        issues: null,
       };
 
       const result = swapUtils.validateSwapQuote(swapQuoteWithoutIssues);

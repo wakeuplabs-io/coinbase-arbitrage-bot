@@ -1,6 +1,6 @@
 import { config } from '../config';
 import { mainnet } from 'viem/chains';
-import { createWalletClient, createPublicClient, http, type Address } from "viem";
+import { createWalletClient, createPublicClient, http, type Address } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { abi as quoterAbi } from '@uniswap/v3-periphery/artifacts/contracts/lens/Quoter.sol/Quoter.json';
 import { SwapProvider } from '../interfaces/swapProvider';
@@ -17,12 +17,16 @@ const amountOutMin = 0n;
 export class UniswapProvider implements SwapProvider {
   readonly name = 'Uniswap v3';
 
-  async estimatePrice(amountIn: bigint, tokenIn: Address, tokenOut: Address): Promise<bigint | undefined> {
+  async estimatePrice(
+    amountIn: bigint,
+    tokenIn: Address,
+    tokenOut: Address,
+  ): Promise<bigint | undefined> {
     const client = createPublicClient({
       chain: mainnet,
       transport: http(config.public_node),
     });
-    
+
     const quotedAmountOut = await client.readContract({
       abi: quoterAbi,
       address: QUOTER_ADDRESS,
@@ -36,7 +40,7 @@ export class UniswapProvider implements SwapProvider {
   async executeSwap(
     amountIn: bigint,
     tokenIn: Address,
-    tokenOut: Address
+    tokenOut: Address,
   ): Promise<bigint | undefined> {
     const account = privateKeyToAccount(config.privateKey as `0x${string}`);
 
@@ -57,16 +61,18 @@ export class UniswapProvider implements SwapProvider {
       abi: swapRouterAbi,
       address: SWAP_ROUTER,
       functionName: 'exactInputSingle',
-      args: [{
-        tokenIn: tokenIn,
-        tokenOut: tokenOut,
-        fee: FEE,
-        recipient: account.address,
-        deadline,
-        amountIn,
-        amountOutMinimum: amountOutMin,
-        sqrtPriceLimitX96: 0n
-      }],
+      args: [
+        {
+          tokenIn: tokenIn,
+          tokenOut: tokenOut,
+          fee: FEE,
+          recipient: account.address,
+          deadline,
+          amountIn,
+          amountOutMinimum: amountOutMin,
+          sqrtPriceLimitX96: 0n,
+        },
+      ],
     });
 
     return 0n;

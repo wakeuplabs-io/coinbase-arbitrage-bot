@@ -1,9 +1,9 @@
 /**
  * Dependency Injection Container
- * 
+ *
  * This module provides a centralized way to manage and inject dependencies
  * throughout the application, improving testability and extensibility.
- * 
+ *
  * @module container
  */
 
@@ -136,16 +136,16 @@ export class Container {
  */
 export function createContainer(): Container {
   const logger = new ArbitrageLogger();
-  const factory = config.environment.useMocks 
+  const factory = config.environment.useMocks
     ? new MockDependencyFactory()
     : new ProductionDependencyFactory();
-  
+
   const container = new Container(factory);
-  
+
   // Log which implementations are being used
-  const mode = config.environment.useMocks ? "mock" : "production";
+  const mode = config.environment.useMocks ? 'mock' : 'production';
   logger.logInfo(`Container configured with ${mode} implementations`);
-  
+
   return container;
 }
 

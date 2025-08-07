@@ -1,20 +1,20 @@
 /**
  * Token utilities and transaction helpers
- * 
+ *
  * This module provides comprehensive token-related utilities including:
  * - Token configuration and information management
  * - Transaction monitoring and receipts
  * - Token allowance handling for swaps
- * 
+ *
  * Token decimals and addresses are read from environment variables for flexible configuration.
- * 
+ *
  * @module tokenUtils
  */
 
 import { config } from '../config';
-import { CdpClient } from "@coinbase/cdp-sdk";
-import { createPublicClient, http, erc20Abi, encodeFunctionData, type Address } from "viem";
-import { base, mainnet } from "viem/chains";
+import { CdpClient } from '@coinbase/cdp-sdk';
+import { createPublicClient, http, erc20Abi, encodeFunctionData, type Address } from 'viem';
+import { base, mainnet } from 'viem/chains';
 
 /**
  * Token configuration interface
@@ -54,7 +54,9 @@ export class TokenUtils {
   static getDecimals(symbol: string): number {
     const token = TOKENS[symbol];
     if (!token) {
-      throw new Error(`Token with symbol '${symbol}' not found. Available tokens: ${Object.keys(TOKENS).join(', ')}`);
+      throw new Error(
+        `Token with symbol '${symbol}' not found. Available tokens: ${Object.keys(TOKENS).join(', ')}`,
+      );
     }
     return token.decimals;
   }
@@ -68,7 +70,9 @@ export class TokenUtils {
   static getTokenInfo(symbol: string): TokenInfo {
     const token = TOKENS[symbol];
     if (!token) {
-      throw new Error(`Token with symbol '${symbol}' not found. Available tokens: ${Object.keys(TOKENS).join(', ')}`);
+      throw new Error(
+        `Token with symbol '${symbol}' not found. Available tokens: ${Object.keys(TOKENS).join(', ')}`,
+      );
     }
     return token;
   }
@@ -82,7 +86,9 @@ export class TokenUtils {
   static getAddress(symbol: string): string {
     const token = TOKENS[symbol];
     if (!token) {
-      throw new Error(`Token with symbol '${symbol}' not found. Available tokens: ${Object.keys(TOKENS).join(', ')}`);
+      throw new Error(
+        `Token with symbol '${symbol}' not found. Available tokens: ${Object.keys(TOKENS).join(', ')}`,
+      );
     }
     return token.address;
   }
@@ -114,7 +120,7 @@ export class TokenUtils {
 }
 
 export const publicClient = createPublicClient({
-  chain: config.network.name === "base" ? base : mainnet,
+  chain: config.network.name === 'base' ? base : mainnet,
   transport: http(),
 });
 
@@ -125,9 +131,9 @@ export const publicClient = createPublicClient({
  * @returns A promise that resolves to the transaction receipt once it is available.
  */
 export async function waitForReceipt(transactionHash: string) {
-    return await publicClient.waitForTransactionReceipt({
-      hash: transactionHash as `0x${string}`,
-    });
+  return await publicClient.waitForTransactionReceipt({
+    hash: transactionHash as `0x${string}`,
+  });
 }
 
 /**
@@ -137,10 +143,7 @@ export async function waitForReceipt(transactionHash: string) {
  * @param symbol - The token symbol for logging
  * @returns The current allowance
  */
-export async function getAllowance(
-  owner: Address, 
-  token: Address
-): Promise<bigint> {
+export async function getAllowance(owner: Address, token: Address): Promise<bigint> {
   try {
     const allowance = await publicClient.readContract({
       address: token,
@@ -148,10 +151,10 @@ export async function getAllowance(
       functionName: 'allowance',
       args: [owner, config.contracts.permit2 as Address],
     });
-    
+
     return allowance;
   } catch (error) {
-    console.error("Error checking allowance:", error);
+    console.error('Error checking allowance:', error);
     return BigInt(0);
   }
 }
@@ -168,32 +171,32 @@ export async function getAllowance(
  * @returns The transaction receipt
  */
 export async function approveTokenAllowance(
-  ownerAddress: Address, 
-  tokenAddress: Address, 
-  spenderAddress: Address, 
+  ownerAddress: Address,
+  tokenAddress: Address,
+  spenderAddress: Address,
   amount: bigint,
-  cdpClient: CdpClient
+  cdpClient: CdpClient,
 ) {
   const data = encodeFunctionData({
     abi: erc20Abi,
     functionName: 'approve',
-    args: [spenderAddress, amount]
+    args: [spenderAddress, amount],
   });
-  
+
   const txResult = await cdpClient.evm.sendTransaction({
     address: ownerAddress,
-    network: "base",
+    network: 'base',
     transaction: {
       to: tokenAddress,
       data,
       value: BigInt(0),
     },
   });
-  
+
   const receipt = await publicClient.waitForTransactionReceipt({
     hash: txResult.transactionHash,
   });
-  
+
   return receipt;
 }
 
@@ -207,17 +210,13 @@ export async function approveTokenAllowance(
  * @returns A promise that resolves when allowance is sufficient
  */
 export async function handleTokenAllowance(
-  ownerAddress: Address, 
+  ownerAddress: Address,
   tokenAddress: Address,
-  fromAmount: bigint
+  fromAmount: bigint,
 ): Promise<void> {
-
   const cdp = new CdpClient();
 
-  const currentAllowance = await getAllowance(
-    ownerAddress, 
-    tokenAddress
-  );
+  const currentAllowance = await getAllowance(ownerAddress, tokenAddress);
 
   if (currentAllowance < fromAmount) {
     await approveTokenAllowance(
@@ -225,7 +224,7 @@ export async function handleTokenAllowance(
       tokenAddress,
       config.contracts.permit2 as Address,
       fromAmount,
-      cdp
+      cdp,
     );
   }
 }

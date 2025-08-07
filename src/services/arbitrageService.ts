@@ -1,9 +1,9 @@
 /**
  * Arbitrage Service
- * 
+ *
  * This service contains the core arbitrage trading logic, separated from
  * dependency management for better testability and maintainability.
- * 
+ *
  * @module arbitrageService
  */
 
@@ -36,8 +36,14 @@ export class ArbitrageService {
   private sessionProfit = 0;
   private loop: NodeJS.Timeout | undefined;
 
-  private readonly balanceOut = parseUnits(config.trading.targetBalanceOut.toString(), TokenUtils.getDecimals(config.tokens.MAIN_TOKEN_SYMBOL));
-  private readonly amountIn = parseUnits(config.trading.amountIn.toString(), TokenUtils.getDecimals(config.tokens.MAIN_TOKEN_SYMBOL));
+  private readonly balanceOut = parseUnits(
+    config.trading.targetBalanceOut.toString(),
+    TokenUtils.getDecimals(config.tokens.MAIN_TOKEN_SYMBOL),
+  );
+  private readonly amountIn = parseUnits(
+    config.trading.amountIn.toString(),
+    TokenUtils.getDecimals(config.tokens.MAIN_TOKEN_SYMBOL),
+  );
   private readonly MAIN_TOKEN_DECIMALS = TokenUtils.getDecimals(config.tokens.MAIN_TOKEN_SYMBOL);
 
   constructor(dependencies: AppDependencies) {
@@ -59,7 +65,7 @@ export class ArbitrageService {
   start(): void {
     this.logger.logBotStart();
     this.executeArbitrageCycle();
-    
+
     this.loop = setInterval(() => {
       this.executeArbitrageCycle();
     }, config.trading.frequencyMs);
@@ -83,56 +89,68 @@ export class ArbitrageService {
     try {
       const inputAmount = this.amountIn;
 
-      this.logger.logPriceEstimation("WETH from CDP");
+      this.logger.logPriceEstimation('WETH from CDP');
       const wethFromCDP = await this.dependencies.cdpProvider.estimatePrice(
-        inputAmount, 
-        config.tokens.MAIN_TOKEN_ADDRESS as `0x${string}`, 
-        config.tokens.SECONDARY_TOKEN_ADDRESS as `0x${string}`
+        inputAmount,
+        config.tokens.MAIN_TOKEN_ADDRESS as `0x${string}`,
+        config.tokens.SECONDARY_TOKEN_ADDRESS as `0x${string}`,
       );
 
       if (!wethFromCDP) {
-        this.logger.logError("Failed to get WETH price from CDP");
+        this.logger.logError('Failed to get WETH price from CDP');
         return;
       }
 
-      this.logger.logPriceEstimation("USDC from DEX");
+      this.logger.logPriceEstimation('USDC from DEX');
       const usdcFromDEX = await this.dependencies.customDEXProvider.estimatePrice(
-        wethFromCDP, 
-        config.tokens.SECONDARY_TOKEN_ADDRESS as `0x${string}`, 
-        config.tokens.MAIN_TOKEN_ADDRESS as `0x${string}`
+        wethFromCDP,
+        config.tokens.SECONDARY_TOKEN_ADDRESS as `0x${string}`,
+        config.tokens.MAIN_TOKEN_ADDRESS as `0x${string}`,
       );
 
       if (!usdcFromDEX) {
-        this.logger.logError("Failed to get USDC price from DEX");
+        this.logger.logError('Failed to get USDC price from DEX');
         return;
       }
 
       const netProfit = usdcFromDEX - inputAmount;
-      const profitPercentage = (Number(formatUnits(netProfit, this.MAIN_TOKEN_DECIMALS)) / Number(formatUnits(inputAmount, this.MAIN_TOKEN_DECIMALS))) * 100;
-      
-      const profitThresholdAmount = parseUnits(config.trading.profitThreshold.toString(), this.MAIN_TOKEN_DECIMALS);
+      const profitPercentage =
+        (Number(formatUnits(netProfit, this.MAIN_TOKEN_DECIMALS)) /
+          Number(formatUnits(inputAmount, this.MAIN_TOKEN_DECIMALS))) *
+        100;
+
+      const profitThresholdAmount = parseUnits(
+        config.trading.profitThreshold.toString(),
+        this.MAIN_TOKEN_DECIMALS,
+      );
       const shouldExecute = netProfit >= profitThresholdAmount;
 
       if (shouldExecute) {
         await this.executeTrade(inputAmount, wethFromCDP, usdcFromDEX, netProfit);
       }
 
-      this.logger.logTradeOpportunity({
-        amountIn: inputAmount,
-        amountOut: usdcFromDEX,
-        netProfit,
-        profitPercentage,
-        gasUsed: 0n // Will be updated if trade is executed
-      }, shouldExecute, this.txCount, this.sessionProfit, this.dependencies.cdpProvider.name, this.dependencies.customDEXProvider.name);
+      this.logger.logTradeOpportunity(
+        {
+          amountIn: inputAmount,
+          amountOut: usdcFromDEX,
+          netProfit,
+          profitPercentage,
+          gasUsed: 0n, // Will be updated if trade is executed
+        },
+        shouldExecute,
+        this.txCount,
+        this.sessionProfit,
+        this.dependencies.cdpProvider.name,
+        this.dependencies.customDEXProvider.name,
+      );
 
       if (this.sessionProfit >= Number(formatUnits(this.balanceOut, this.MAIN_TOKEN_DECIMALS))) {
         this.logger.logTargetReached();
         await this.executeX402Payment();
         this.stop();
       }
-
     } catch (error) {
-      this.logger.logError("Error in arbitrage cycle", error);
+      this.logger.logError('Error in arbitrage cycle', error);
     }
   }
 
@@ -140,10 +158,10 @@ export class ArbitrageService {
    * Execute the actual trade
    */
   private async executeTrade(
-    inputAmount: bigint, 
-    wethAmount: bigint, 
-    expectedOutput: bigint, 
-    expectedProfit: bigint
+    inputAmount: bigint,
+    wethAmount: bigint,
+    expectedOutput: bigint,
+    expectedProfit: bigint,
   ): Promise<void> {
     try {
       this.logger.logTradeExecution();
@@ -151,35 +169,34 @@ export class ArbitrageService {
       const actualWeth = await this.dependencies.cdpProvider.executeSwap(
         inputAmount,
         config.tokens.MAIN_TOKEN_ADDRESS as `0x${string}`,
-        config.tokens.SECONDARY_TOKEN_ADDRESS as `0x${string}`
+        config.tokens.SECONDARY_TOKEN_ADDRESS as `0x${string}`,
       );
 
       if (!actualWeth) {
-        this.logger.logError("First swap failed");
+        this.logger.logError('First swap failed');
         return;
       }
 
       const actualOutput = await this.dependencies.customDEXProvider.executeSwap(
         actualWeth,
         config.tokens.SECONDARY_TOKEN_ADDRESS as `0x${string}`,
-        config.tokens.MAIN_TOKEN_ADDRESS as `0x${string}`
+        config.tokens.MAIN_TOKEN_ADDRESS as `0x${string}`,
       );
 
       if (!actualOutput) {
-        this.logger.logError("Second swap failed");
+        this.logger.logError('Second swap failed');
         return;
       }
 
       const actualProfit = actualOutput - inputAmount;
       const actualProfitUSDC = Number(formatUnits(actualProfit, this.MAIN_TOKEN_DECIMALS));
-      
+
       this.sessionProfit += actualProfitUSDC;
       this.txCount++;
 
       this.logger.logTradeSuccess(actualProfitUSDC);
-
     } catch (error) {
-      this.logger.logError("Error executing trade", error);
+      this.logger.logError('Error executing trade', error);
     }
   }
 
@@ -190,14 +207,14 @@ export class ArbitrageService {
     try {
       this.logger.logX402PaymentStart();
       const x402Result = await this.dependencies.buyer.buyContent(config.x402.paymentUrl);
-      
+
       if (x402Result) {
         this.logger.logX402PaymentSuccess(x402Result);
       } else {
-        this.logger.logX402PaymentWarning("Payment completed but no content received");
+        this.logger.logX402PaymentWarning('Payment completed but no content received');
       }
     } catch (error) {
-      this.logger.logError("Failed to execute x402 payment", error);
+      this.logger.logError('Failed to execute x402 payment', error);
     }
   }
 
@@ -209,7 +226,7 @@ export class ArbitrageService {
       txCount: this.txCount,
       sessionProfit: this.sessionProfit,
       uptime: Date.now() - this.startTime,
-      isRunning: this.loop !== undefined
+      isRunning: this.loop !== undefined,
     };
   }
 

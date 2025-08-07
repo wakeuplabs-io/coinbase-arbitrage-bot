@@ -14,15 +14,19 @@ describe('MockUniswapProvider', () => {
       const tokenIn = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as const;
       const tokenOut = '0x4200000000000000000000000000000000000006' as const;
 
-      const estimatedPrice = await mockUniswapProvider.estimatePrice(inputAmount, tokenIn, tokenOut);
+      const estimatedPrice = await mockUniswapProvider.estimatePrice(
+        inputAmount,
+        tokenIn,
+        tokenOut,
+      );
 
       expect(estimatedPrice).toBeDefined();
       expect(estimatedPrice).toBeGreaterThan(inputAmount); // Should be more than input
-      
+
       // Should be between 1.01x and 1.05x of input amount
-      const minExpected = inputAmount * 101n / 100n; // 1.01x
-      const maxExpected = inputAmount * 105n / 100n; // 1.05x
-      
+      const minExpected = (inputAmount * 101n) / 100n; // 1.01x
+      const maxExpected = (inputAmount * 105n) / 100n; // 1.05x
+
       expect(estimatedPrice).toBeGreaterThanOrEqual(minExpected);
       expect(estimatedPrice).toBeLessThanOrEqual(maxExpected);
     });
@@ -34,9 +38,9 @@ describe('MockUniswapProvider', () => {
 
       // Generate multiple prices to test randomness
       const prices = await Promise.all(
-        Array(10).fill(0).map(() => 
-          mockUniswapProvider.estimatePrice(inputAmount, tokenIn, tokenOut)
-        )
+        Array(10)
+          .fill(0)
+          .map(() => mockUniswapProvider.estimatePrice(inputAmount, tokenIn, tokenOut)),
       );
 
       // Not all prices should be identical (very low probability with random factor)
@@ -49,7 +53,11 @@ describe('MockUniswapProvider', () => {
       const tokenIn = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as const;
       const tokenOut = '0x4200000000000000000000000000000000000006' as const;
 
-      const estimatedPrice = await mockUniswapProvider.estimatePrice(inputAmount, tokenIn, tokenOut);
+      const estimatedPrice = await mockUniswapProvider.estimatePrice(
+        inputAmount,
+        tokenIn,
+        tokenOut,
+      );
 
       expect(estimatedPrice).toBeDefined();
       expect(estimatedPrice).toBe(0n);
@@ -60,11 +68,15 @@ describe('MockUniswapProvider', () => {
       const tokenIn = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as const;
       const tokenOut = '0x4200000000000000000000000000000000000006' as const;
 
-      const estimatedPrice = await mockUniswapProvider.estimatePrice(inputAmount, tokenIn, tokenOut);
+      const estimatedPrice = await mockUniswapProvider.estimatePrice(
+        inputAmount,
+        tokenIn,
+        tokenOut,
+      );
 
       expect(estimatedPrice).toBeDefined();
       expect(estimatedPrice).toBeGreaterThan(inputAmount);
-      
+
       // Verify the multiplication doesn't cause overflow issues
       expect(typeof estimatedPrice).toBe('bigint');
     });
@@ -79,7 +91,11 @@ describe('MockUniswapProvider', () => {
       // Mock Math.random to return a consistent value for this test
       const mockRandom = jest.spyOn(Math, 'random').mockReturnValue(0.5);
 
-      const estimatedPrice = await mockUniswapProvider.estimatePrice(inputAmount, tokenIn, tokenOut);
+      const estimatedPrice = await mockUniswapProvider.estimatePrice(
+        inputAmount,
+        tokenIn,
+        tokenOut,
+      );
       const swapResult = await mockUniswapProvider.executeSwap(inputAmount, tokenIn, tokenOut);
 
       expect(swapResult).toEqual(estimatedPrice);
@@ -120,9 +136,9 @@ describe('MockUniswapProvider', () => {
       const price = await mockUniswapProvider.estimatePrice(inputAmount, tokenIn, tokenOut);
 
       // Should use the same random factor range as MockCDPProvider
-      const minExpected = inputAmount * 101n / 100n; // 1.01x
-      const maxExpected = inputAmount * 105n / 100n; // 1.05x
-      
+      const minExpected = (inputAmount * 101n) / 100n; // 1.01x
+      const maxExpected = (inputAmount * 105n) / 100n; // 1.05x
+
       expect(price).toBeGreaterThanOrEqual(minExpected);
       expect(price).toBeLessThanOrEqual(maxExpected);
     });

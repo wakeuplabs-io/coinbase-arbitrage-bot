@@ -148,6 +148,43 @@ npm run test:coverage
 npm test tests/services/arbitrageService.test.ts
 ```
 
+## 🔍 Code Quality & Linting
+
+The project uses ESLint and Prettier to maintain consistent code quality and style.
+
+### Linting Commands
+
+```bash
+# Check for linting issues
+npm run lint
+
+# Automatically fix linting issues
+npm run lint:fix
+
+# Format code with Prettier
+npm run format
+
+# Check code formatting
+npm run format:check
+
+# Run all checks (lint + format + tests)
+npm run check
+```
+
+### Code Quality Features
+
+- **ESLint**: TypeScript-specific linting with Node.js environment support
+- **Prettier**: Consistent code formatting across the project
+- **VS Code Integration**: Automatic formatting and linting on save
+- **Pre-configured Rules**: Optimized for TypeScript development
+- **Test-specific Rules**: Relaxed linting for test files
+
+### Configuration Files
+
+- `eslint.config.js`: ESLint configuration with TypeScript support
+- `.prettierrc.json`: Prettier formatting rules
+- `.vscode/settings.json`: VS Code editor integration
+
 ### Test Structure
 
 ```

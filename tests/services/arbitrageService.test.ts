@@ -12,28 +12,28 @@ jest.mock('../../src/config', () => ({
       targetBalanceOut: 100,
       amountIn: 10,
       frequencyMs: 5000,
-      profitThreshold: 0.5
+      profitThreshold: 0.5,
     },
     tokens: {
       MAIN_TOKEN_SYMBOL: 'USDC',
       SECONDARY_TOKEN_SYMBOL: 'WETH',
       MAIN_TOKEN_ADDRESS: '0x1234567890123456789012345678901234567890',
-      SECONDARY_TOKEN_ADDRESS: '0x0987654321098765432109876543210987654321'
+      SECONDARY_TOKEN_ADDRESS: '0x0987654321098765432109876543210987654321',
     },
     x402: {
-      paymentUrl: 'https://example.com/payment'
+      paymentUrl: 'https://example.com/payment',
     },
     network: {
-      name: 'base'
-    }
-  }
+      name: 'base',
+    },
+  },
 }));
 
 // Mock the TokenUtils module
 jest.mock('../../src/utils/tokenUtils', () => ({
   TokenUtils: {
-    getDecimals: jest.fn().mockReturnValue(6) // USDC has 6 decimals
-  }
+    getDecimals: jest.fn().mockReturnValue(6), // USDC has 6 decimals
+  },
 }));
 
 // Mock the ArbitrageLogger
@@ -52,8 +52,8 @@ jest.mock('../../src/services/arbitrageLogger', () => ({
     logX402PaymentStart: jest.fn(),
     logX402PaymentSuccess: jest.fn(),
     logX402PaymentWarning: jest.fn(),
-    displayFinalStats: jest.fn()
-  }))
+    displayFinalStats: jest.fn(),
+  })),
 }));
 
 describe('ArbitrageService', () => {
@@ -69,28 +69,28 @@ describe('ArbitrageService', () => {
     mockCDPProvider = {
       estimatePrice: jest.fn(),
       executeSwap: jest.fn(),
-      name: 'MockCDP'
+      name: 'MockCDP',
     };
 
     mockCustomDEXProvider = {
       estimatePrice: jest.fn(),
       executeSwap: jest.fn(),
-      name: 'MockDEX'
+      name: 'MockDEX',
     };
 
     mockBuyer = {
-      buyContent: jest.fn()
+      buyContent: jest.fn(),
     };
 
     mockWallet = {
-      getBalance: jest.fn()
+      getBalance: jest.fn(),
     };
 
     mockDependencies = {
       cdpProvider: mockCDPProvider,
       customDEXProvider: mockCustomDEXProvider,
       buyer: mockBuyer,
-      wallet: mockWallet
+      wallet: mockWallet,
     };
 
     arbitrageService = new ArbitrageService(mockDependencies);
@@ -126,21 +126,21 @@ describe('ArbitrageService', () => {
 
       // Start the service briefly to trigger one cycle
       arbitrageService.start();
-      
+
       // Wait for the cycle to complete
       await new Promise(resolve => setTimeout(resolve, 100));
-      
+
       arbitrageService.stop();
 
       expect(mockCDPProvider.estimatePrice).toHaveBeenCalledWith(
         inputAmount,
         '0x1234567890123456789012345678901234567890',
-        '0x0987654321098765432109876543210987654321'
+        '0x0987654321098765432109876543210987654321',
       );
       expect(mockCustomDEXProvider.estimatePrice).toHaveBeenCalledWith(
         wethOutput,
         '0x0987654321098765432109876543210987654321',
-        '0x1234567890123456789012345678901234567890'
+        '0x1234567890123456789012345678901234567890',
       );
     });
 
@@ -183,10 +183,10 @@ describe('ArbitrageService', () => {
   describe('session management', () => {
     test('should start and stop properly', () => {
       expect(arbitrageService.getStats().isRunning).toBe(false);
-      
+
       arbitrageService.start();
       expect(arbitrageService.getStats().isRunning).toBe(true);
-      
+
       arbitrageService.stop();
       expect(arbitrageService.getStats().isRunning).toBe(false);
     });
@@ -225,7 +225,7 @@ describe('ArbitrageService', () => {
 
     test('should handle DEX provider estimation errors gracefully', async () => {
       const wethOutput = parseUnits('0.004', 18);
-      
+
       mockCDPProvider.estimatePrice.mockResolvedValue(wethOutput);
       mockCustomDEXProvider.estimatePrice.mockResolvedValue(undefined);
 

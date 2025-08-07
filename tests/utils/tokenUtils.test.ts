@@ -7,12 +7,12 @@ jest.mock('../../src/config', () => ({
       MAIN_TOKEN_DECIMALS: 6,
       SECONDARY_TOKEN_SYMBOL: 'WETH',
       SECONDARY_TOKEN_ADDRESS: '0x4200000000000000000000000000000000000006',
-      SECONDARY_TOKEN_DECIMALS: 18
+      SECONDARY_TOKEN_DECIMALS: 18,
     },
     network: {
-      name: 'base'
-    }
-  }
+      name: 'base',
+    },
+  },
 }));
 
 // Mock the modules that have external dependencies
@@ -25,7 +25,7 @@ jest.mock('viem', () => ({
 }));
 jest.mock('viem/chains', () => ({
   base: {},
-  mainnet: {}
+  mainnet: {},
 }));
 
 import { TokenUtils, TOKENS } from '../../src/utils/tokenUtils';
@@ -55,7 +55,7 @@ describe('TokenUtils', () => {
       expect(tokenInfo).toEqual({
         address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
         symbol: 'USDC',
-        decimals: 6
+        decimals: 6,
       });
     });
 
@@ -64,7 +64,7 @@ describe('TokenUtils', () => {
       expect(tokenInfo).toEqual({
         address: '0x4200000000000000000000000000000000000006',
         symbol: 'WETH',
-        decimals: 18
+        decimals: 18,
       });
     });
 
@@ -116,17 +116,17 @@ describe('TokenUtils', () => {
     test('should have correct TOKENS object structure', () => {
       expect(TOKENS).toHaveProperty('USDC');
       expect(TOKENS).toHaveProperty('WETH');
-      
+
       expect(TOKENS.USDC).toEqual({
         address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
         symbol: 'USDC',
-        decimals: 6
+        decimals: 6,
       });
-      
+
       expect(TOKENS.WETH).toEqual({
         address: '0x4200000000000000000000000000000000000006',
         symbol: 'WETH',
-        decimals: 18
+        decimals: 18,
       });
     });
 

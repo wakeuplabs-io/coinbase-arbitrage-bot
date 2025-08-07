@@ -1,9 +1,9 @@
 /**
  * Arbitrage Logger Service
- * 
+ *
  * This service handles all logging and formatted output for the arbitrage bot,
  * providing consistent formatting and separation of logging concerns.
- * 
+ *
  * @module arbitrageLogger
  */
 
@@ -32,39 +32,49 @@ export class ArbitrageLogger {
    * Display bot startup information and configuration
    */
   displayStartupInfo(amountIn: bigint, balanceOut: bigint): void {
-    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log(` Network: ${config.network.name} | Wallet: ${config.address}`);
-    console.log(` Main token ( ${config.tokens.MAIN_TOKEN_SYMBOL}): ${config.tokens.MAIN_TOKEN_ADDRESS} | Start: ${Number(formatUnits(amountIn, 6)).toFixed(2)} USDC`);
-    console.log(` Target profit: +${Number(formatUnits(BigInt(balanceOut), 6)).toFixed(2)} (${((Number(balanceOut) / Number(amountIn)) * 100).toFixed(0)} %)`);
-    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+    console.log(
+      ` Main token ( ${config.tokens.MAIN_TOKEN_SYMBOL}): ${config.tokens.MAIN_TOKEN_ADDRESS} | Start: ${Number(formatUnits(amountIn, 6)).toFixed(2)} USDC`,
+    );
+    console.log(
+      ` Target profit: +${Number(formatUnits(BigInt(balanceOut), 6)).toFixed(2)} (${((Number(balanceOut) / Number(amountIn)) * 100).toFixed(0)} %)`,
+    );
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
   }
 
   /**
    * Display trading log header
    */
   displayTradingHeader(): void {
-    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    console.log(" Date                | # | Protocols | In → Out    | PnL            | Balance | Profit     ");
-    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    console.log(
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    );
+    console.log(
+      ' Date                | # | Protocols | In → Out    | PnL            | Balance | Profit     ',
+    );
+    console.log(
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    );
   }
 
   /**
    * Log a trade opportunity with formatted output
    */
   logTradeOpportunity(
-    result: TradeResult, 
-    willExecute: boolean, 
-    txCount: number, 
+    result: TradeResult,
+    willExecute: boolean,
+    txCount: number,
     sessionProfit: number,
     cdpProviderName: string,
-    dexProviderName: string
+    dexProviderName: string,
   ): void {
-    const timestamp = new Date().toLocaleString('en-US', { 
-      month: '2-digit', 
-      day: '2-digit', 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      second: '2-digit' 
+    const timestamp = new Date().toLocaleString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
     });
 
     const protocols = `${cdpProviderName} → ${dexProviderName}`;
@@ -72,30 +82,32 @@ export class ArbitrageLogger {
     const pnl = `${result.profitPercentage >= 0 ? '+' : ''}${result.profitPercentage.toFixed(3)}%`;
     const profit = `${result.netProfit >= 0n ? '+' : ''}${Number(formatUnits(result.netProfit, this.MAIN_TOKEN_DECIMALS)).toFixed(6)}`;
     const balance = `${sessionProfit.toFixed(6)}`;
-    const action = willExecute ? "🚀 SWAP EXECUTED" : "⏸️  NO SWAP";
+    const action = willExecute ? '🚀 SWAP EXECUTED' : '⏸️  NO SWAP';
 
-    console.log(` ${timestamp} | ${txCount.toString().padStart(2)} | ${protocols.padEnd(20)} | ${amounts.padEnd(11)} | ${pnl.padEnd(7)} ${profit.padStart(8)} | ${balance.padStart(7)} | ${action}`);
+    console.log(
+      ` ${timestamp} | ${txCount.toString().padStart(2)} | ${protocols.padEnd(20)} | ${amounts.padEnd(11)} | ${pnl.padEnd(7)} ${profit.padStart(8)} | ${balance.padStart(7)} | ${action}`,
+    );
   }
 
   /**
    * Log bot startup message
    */
   logBotStart(): void {
-    console.log("🚀 Starting arbitrage bot...");
+    console.log('🚀 Starting arbitrage bot...');
   }
 
   /**
    * Log bot stop message
    */
   logBotStop(): void {
-    console.log("🛑 Arbitrage bot stopped");
+    console.log('🛑 Arbitrage bot stopped');
   }
 
   /**
    * Log target profit reached
    */
   logTargetReached(): void {
-    console.log(`🎯 Target profit reached! Stopping bot...`);
+    console.log('🎯 Target profit reached! Stopping bot...');
   }
 
   /**
@@ -109,7 +121,7 @@ export class ArbitrageLogger {
    * Log trade execution start
    */
   logTradeExecution(): void {
-    console.log("🔄 Executing profitable trade...");
+    console.log('🔄 Executing profitable trade...');
   }
 
   /**
@@ -151,14 +163,14 @@ export class ArbitrageLogger {
     const uptimeMinutes = Math.floor(stats.uptime / 1000 / 60);
     const uptimeSeconds = Math.floor((stats.uptime / 1000) % 60);
 
-    console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    console.log("                            FINAL SESSION STATS                          ");
-    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('                            FINAL SESSION STATS                          ');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log(`📊 Total Transactions: ${stats.txCount}`);
     console.log(`💰 Session Profit: ${stats.sessionProfit.toFixed(6)} USDC`);
     console.log(`⏱️  Runtime: ${uptimeMinutes}m ${uptimeSeconds}s`);
     console.log(`📈 Status: ${stats.isRunning ? 'Running' : 'Stopped'}`);
-    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   }
 
   /**
@@ -166,7 +178,7 @@ export class ArbitrageLogger {
    */
   displayEnvironmentInfo(): void {
     const mode = config.environment.useMocks ? 'Mock' : 'Production';
-    console.log("🚀 Starting DeFi Arbitrage Bot...");
+    console.log('🚀 Starting DeFi Arbitrage Bot...');
     console.log(`📊 Environment: ${mode} mode`);
   }
 
@@ -183,7 +195,9 @@ export class ArbitrageLogger {
   logGracefulShutdown(signal: string, stats?: BotStats): void {
     console.log(`\n🛑 Received ${signal}, shutting down gracefully...`);
     if (stats) {
-      console.log(`📊 Final stats: ${stats.txCount} transactions, ${stats.sessionProfit.toFixed(6)} USDC profit`);
+      console.log(
+        `📊 Final stats: ${stats.txCount} transactions, ${stats.sessionProfit.toFixed(6)} USDC profit`,
+      );
     }
   }
 
@@ -191,11 +205,11 @@ export class ArbitrageLogger {
    * Log x402 payment related messages
    */
   logX402PaymentStart(): void {
-    console.log("💳 Executing x402 payment for premium content...");
+    console.log('💳 Executing x402 payment for premium content...');
   }
 
   logX402PaymentSuccess(content?: string): void {
-    console.log("✅ x402 payment completed successfully");
+    console.log('✅ x402 payment completed successfully');
     if (content) {
       console.log(`📄 Content received: ${content}`);
     }

@@ -1,9 +1,9 @@
 /**
  * Logging Utility
- * 
+ *
  * Provides centralized logging functionality that outputs to both
  * console and a persistent log file for debugging and monitoring.
- * 
+ *
  * @module logger
  */
 
@@ -22,7 +22,7 @@ if (!fs.existsSync(logDir)) {
 
 /**
  * Log a message with timestamp to both console and file.
- * 
+ *
  * @param message - The message to log
  */
 export const log = (message: string) => {
