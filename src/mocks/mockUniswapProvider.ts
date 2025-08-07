@@ -7,8 +7,8 @@ export class MockUniswapProvider implements SwapProvider {
 
   estimatePrice(
     amountIn: bigint,
-    tokenIn: Address,
-    tokenOut: Address,
+    _tokenIn: Address,
+    _tokenOut: Address,
   ): Promise<bigint | undefined> {
     // Simulate a random price estimation between 1.01 and 1.05 times the input amount
     const randomFactor = 1.01 + Math.random() * 0.04;
@@ -18,11 +18,11 @@ export class MockUniswapProvider implements SwapProvider {
 
   executeSwap(
     amountIn: bigint,
-    tokenIn: Address,
-    tokenOut: Address
+    _tokenIn: Address,
+    _tokenOut: Address,
   ): Promise<bigint | undefined> {
     if (this.lastEstimatedPrice === undefined) {
-      return this.estimatePrice(amountIn, tokenIn, tokenOut);
+      return this.estimatePrice(amountIn, _tokenIn, _tokenOut);
     }
     return Promise.resolve(this.lastEstimatedPrice);
   }

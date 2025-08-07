@@ -45,7 +45,7 @@ describe('TokenUtils', () => {
     test('should throw error for unknown token', () => {
       expect(() => {
         TokenUtils.getDecimals('UNKNOWN');
-      }).toThrow("Token with symbol 'UNKNOWN' not found. Available tokens: USDC, WETH");
+      }).toThrow('Token with symbol \'UNKNOWN\' not found. Available tokens: USDC, WETH');
     });
   });
 
@@ -71,7 +71,7 @@ describe('TokenUtils', () => {
     test('should throw error for unknown token', () => {
       expect(() => {
         TokenUtils.getTokenInfo('UNKNOWN');
-      }).toThrow("Token with symbol 'UNKNOWN' not found. Available tokens: USDC, WETH");
+      }).toThrow('Token with symbol \'UNKNOWN\' not found. Available tokens: USDC, WETH');
     });
   });
 
@@ -89,7 +89,7 @@ describe('TokenUtils', () => {
     test('should throw error for unknown token', () => {
       expect(() => {
         TokenUtils.getAddress('UNKNOWN');
-      }).toThrow("Token with symbol 'UNKNOWN' not found. Available tokens: USDC, WETH");
+      }).toThrow('Token with symbol \'UNKNOWN\' not found. Available tokens: USDC, WETH');
     });
   });
 

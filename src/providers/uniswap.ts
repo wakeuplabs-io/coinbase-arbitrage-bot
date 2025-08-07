@@ -6,13 +6,14 @@ import { abi as quoterAbi } from '@uniswap/v3-periphery/artifacts/contracts/lens
 import { SwapProvider } from '../interfaces/swapProvider';
 import { abi as swapRouterAbi } from '@uniswap/v3-periphery/artifacts/contracts/SwapRouter.sol/SwapRouter.json';
 import { abi as erc20Abi } from '@uniswap/v2-core/build/ERC20.json';
-
-// Uniswap V3 Contract Addresses and Constants (Mainnet)
-const SWAP_ROUTER = '0xE592427A0AEce92De3Edee1F18E0157C05861564';
-const QUOTER_ADDRESS = '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6';
-const FEE = 3000;
-const deadline = BigInt(Math.floor(Date.now() / 1000) + 60 * 20);
-const amountOutMin = 0n;
+import {
+  UNISWAP_V3_SWAP_ROUTER,
+  UNISWAP_V3_QUOTER_ADDRESS,
+  UNISWAP_V3_DEFAULT_FEE,
+  UNISWAP_V3_MIN_AMOUNT_OUT,
+  UNISWAP_V3_SQRT_PRICE_LIMIT,
+  getUniswapDeadline,
+} from '../constants/uniswap';
 
 export class UniswapProvider implements SwapProvider {
   readonly name = 'Uniswap v3';
@@ -29,7 +30,7 @@ export class UniswapProvider implements SwapProvider {
 
     const quotedAmountOut = await client.readContract({
       abi: quoterAbi,
-      address: QUOTER_ADDRESS,
+      address: UNISWAP_V3_QUOTER_ADDRESS,
       functionName: 'quoteExactInputSingle',
       args: [tokenIn, tokenOut, config.trading.swapFee, amountIn, 0n],
     });
@@ -54,23 +55,23 @@ export class UniswapProvider implements SwapProvider {
       abi: erc20Abi,
       address: tokenIn,
       functionName: 'approve',
-      args: [SWAP_ROUTER, amountIn],
+      args: [UNISWAP_V3_SWAP_ROUTER, amountIn],
     });
 
-    const swapResult = await client.writeContract({
+    const _swapResult = await client.writeContract({
       abi: swapRouterAbi,
-      address: SWAP_ROUTER,
+      address: UNISWAP_V3_SWAP_ROUTER,
       functionName: 'exactInputSingle',
       args: [
         {
           tokenIn: tokenIn,
           tokenOut: tokenOut,
-          fee: FEE,
+          fee: UNISWAP_V3_DEFAULT_FEE,
           recipient: account.address,
-          deadline,
+          deadline: getUniswapDeadline(),
           amountIn,
-          amountOutMinimum: amountOutMin,
-          sqrtPriceLimitX96: 0n,
+          amountOutMinimum: UNISWAP_V3_MIN_AMOUNT_OUT,
+          sqrtPriceLimitX96: UNISWAP_V3_SQRT_PRICE_LIMIT,
         },
       ],
     });
