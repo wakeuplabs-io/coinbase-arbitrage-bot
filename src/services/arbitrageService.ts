@@ -89,7 +89,8 @@ export class ArbitrageService {
     try {
       const inputAmount = this.amountIn;
 
-      this.logger.logPriceEstimation('WETH from CDP');
+      // Dynamic token symbol instead of hardcoded 'WETH'
+      this.logger.logPriceEstimation(`${config.tokens.SECONDARY_TOKEN_SYMBOL} from CDP`);
       const wethFromCDP = await this.dependencies.cdpProvider.estimatePrice(
         inputAmount,
         config.tokens.MAIN_TOKEN_ADDRESS as `0x${string}`,
@@ -101,7 +102,8 @@ export class ArbitrageService {
         return;
       }
 
-      this.logger.logPriceEstimation('USDC from DEX');
+      // Dynamic token symbol instead of hardcoded 'USDC'
+      this.logger.logPriceEstimation(`${config.tokens.MAIN_TOKEN_SYMBOL} from DEX`);
       const usdcFromDEX = await this.dependencies.customDEXProvider.estimatePrice(
         wethFromCDP,
         config.tokens.SECONDARY_TOKEN_ADDRESS as `0x${string}`,
