@@ -11,6 +11,7 @@ import { formatUnits } from 'viem';
 import { config } from '../config';
 import { TradeResult } from './arbitrageService';
 import { TokenUtils } from '../utils/tokenUtils';
+import { event, success, info, warn, error as logErrorFn } from '../utils/logger';
 
 /**
  * Bot statistics interface for logging
@@ -93,52 +94,52 @@ export class ArbitrageLogger {
    * Log bot startup message
    */
   logBotStart(): void {
-    console.log('🚀 Starting arbitrage bot...');
+    event('Starting arbitrage bot...');
   }
 
   /**
    * Log bot stop message
    */
   logBotStop(): void {
-    console.log('🛑 Arbitrage bot stopped');
+    event('Arbitrage bot stopped');
   }
 
   /**
    * Log target profit reached
    */
   logTargetReached(): void {
-    console.log('🎯 Target profit reached! Stopping bot...');
+    success('Target profit reached! Stopping bot...');
   }
 
   /**
    * Log successful trade execution
    */
   logTradeSuccess(profitUSDC: number): void {
-    console.log(`✅ Trade executed successfully! Profit: ${profitUSDC.toFixed(6)} USDC`);
+    success(`Trade executed successfully! Profit: ${profitUSDC.toFixed(6)} USDC`);
   }
 
   /**
    * Log trade execution start
    */
   logTradeExecution(): void {
-    console.log('🔄 Executing profitable trade...');
+    info('Executing profitable trade...');
   }
 
   /**
    * Log price estimation steps
    */
   logPriceEstimation(step: string): void {
-    console.log(`Getting ${step}...`);
+    info(`Getting ${step}...`);
   }
 
   /**
    * Log error messages
    */
-  logError(message: string, error?: unknown): void {
-    if (error) {
-      console.error(`❌ ${message}:`, error);
+  logError(message: string, err?: unknown): void {
+    if (err) {
+      logErrorFn(message, err);
     } else {
-      console.error(`❌ ${message}`);
+      logErrorFn(message);
     }
   }
 
@@ -146,14 +147,14 @@ export class ArbitrageLogger {
    * Log info messages
    */
   logInfo(message: string): void {
-    console.log(`ℹ️  ${message}`);
+    info(message);
   }
 
   /**
    * Log warning messages
    */
   logWarning(message: string): void {
-    console.warn(`⚠️  ${message}`);
+    warn(message);
   }
 
   /**
@@ -178,26 +179,24 @@ export class ArbitrageLogger {
    */
   displayEnvironmentInfo(): void {
     const mode = config.environment.useMocks ? 'Mock' : 'Production';
-    console.log('🚀 Starting DeFi Arbitrage Bot...');
-    console.log(`📊 Environment: ${mode} mode`);
+    event('Starting DeFi Arbitrage Bot...');
+    info(`Environment: ${mode} mode`);
   }
 
   /**
    * Display container configuration
    */
   displayContainerInfo(containerType: string): void {
-    console.log(`🔧 Container configured with ${containerType} implementations`);
+    info(`Container configured with ${containerType} implementations`);
   }
 
   /**
    * Log graceful shutdown messages
    */
   logGracefulShutdown(signal: string, stats?: BotStats): void {
-    console.log(`\n🛑 Received ${signal}, shutting down gracefully...`);
+    warn(`Received ${signal}, shutting down gracefully...`);
     if (stats) {
-      console.log(
-        `📊 Final stats: ${stats.txCount} transactions, ${stats.sessionProfit.toFixed(6)} USDC profit`,
-      );
+      info(`Final stats: ${stats.txCount} transactions, ${stats.sessionProfit.toFixed(6)} USDC profit`);
     }
   }
 
@@ -205,17 +204,17 @@ export class ArbitrageLogger {
    * Log x402 payment related messages
    */
   logX402PaymentStart(): void {
-    console.log('💳 Executing x402 payment for premium content...');
+    info('Executing x402 payment for premium content...');
   }
 
   logX402PaymentSuccess(content?: string): void {
-    console.log('✅ x402 payment completed successfully');
+    success('x402 payment completed successfully');
     if (content) {
-      console.log(`📄 Content received: ${content}`);
+      info(`Content received: ${content}`);
     }
   }
 
   logX402PaymentWarning(message: string): void {
-    console.warn(`⚠️  x402 payment: ${message}`);
+    warn(`x402 payment: ${message}`);
   }
 }
