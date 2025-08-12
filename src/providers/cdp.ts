@@ -3,7 +3,6 @@ import { CdpClient } from '@coinbase/cdp-sdk';
 import { type Address } from 'viem';
 import { SwapProvider } from '../interfaces/swapProvider';
 import { handleTokenAllowance, waitForReceipt } from '../utils/tokenUtils';
-import { validateSwapQuote } from '../utils/swapUtils';
 
 export class CDPProvider implements SwapProvider {
   readonly name = 'CDP';
@@ -54,7 +53,7 @@ export class CDPProvider implements SwapProvider {
       return;
     }
 
-    if (!validateSwapQuote(swapQuote)) {
+    if (!this.validateSwapQuote(swapQuote)) {
       console.log('\n❌ Swap validation failed. Aborting execution.');
       return;
     }
@@ -67,4 +66,26 @@ export class CDPProvider implements SwapProvider {
 
     return swapQuote.toAmount;
   }
+
+  validateSwapQuote(swapQuote: any): boolean {
+    // Handle undefined/null input
+    if (!swapQuote) {
+      return true;
+    }
+
+    let isValid = true;
+
+    // Check balance issues
+    if (swapQuote.issues?.balance) {
+      isValid = false;
+    }
+
+    // Check allowance issues
+    if (swapQuote.issues?.allowance) {
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
 }
