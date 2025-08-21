@@ -4,6 +4,15 @@ import { type Address } from 'viem';
 import { SwapProvider } from '../interfaces/swapProvider';
 import { handleTokenAllowance, waitForReceipt } from '../utils/tokenUtils';
 
+interface SwapQuote {
+  liquidityAvailable: boolean;
+  toAmount: bigint;
+  issues?: {
+    balance?: unknown;
+    allowance?: unknown;
+  };
+}
+
 export class CDPProvider implements SwapProvider {
   readonly name = 'CDP';
 
@@ -15,7 +24,7 @@ export class CDPProvider implements SwapProvider {
     tokenOut: Address,
   ): Promise<bigint | undefined> {
     const swapPrice = await this.cdp.evm.getSwapPrice({
-      network: config.network.name == 'base' ? 'base' : 'ethereum',
+      network: config.network.name as 'base' | 'ethereum',
       fromAmount: amountIn,
       fromToken: tokenIn,
       toToken: tokenOut,
@@ -40,7 +49,7 @@ export class CDPProvider implements SwapProvider {
     await handleTokenAllowance(ownerAccount.address as Address, tokenIn, amountIn);
 
     const swapQuote = await ownerAccount.quoteSwap({
-      network: config.network.name == 'base' ? 'base' : 'ethereum',
+      network: config.network.name as 'base' | 'ethereum',
       fromToken: tokenIn,
       fromAmount: amountIn,
       toToken: tokenOut,
@@ -67,7 +76,7 @@ export class CDPProvider implements SwapProvider {
     return swapQuote.toAmount;
   }
 
-  validateSwapQuote(swapQuote: any): boolean {
+  validateSwapQuote(swapQuote: SwapQuote): boolean {
     // Handle undefined/null input
     if (!swapQuote) {
       return true;
@@ -87,5 +96,4 @@ export class CDPProvider implements SwapProvider {
 
     return isValid;
   }
-
 }

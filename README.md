@@ -5,7 +5,7 @@ A sophisticated TypeScript-based arbitrage trading bot that identifies and execu
 ## ✨ Features
 
 - **Automated Arbitrage Detection**: Real-time price monitoring across CDP and DEX platforms
-- **Risk Management**: Configurable profit thresholds 
+- **Risk Management**: Configurable profit thresholds
 - **Smart Trade Execution**: Automated swap execution with comprehensive error handling
 - **Session Tracking**: Real-time profit tracking and transaction counting
 - **X402 Payment Integration**: Automatic premium content purchases when profit targets are reached
@@ -37,10 +37,10 @@ src/
 │   └── uniswap.ts            # Uniswap integration
 ├── services/
 │   ├── arbitrageLogger.ts    # Comprehensive logging service
-│   └── arbitrageService.ts   # Core arbitrage trading logic
+│   ├── arbitrageService.ts   # Core arbitrage trading logic
+|   └── x402FetchService.ts   # Call x402 protected endpoint
 ├── utils/
 │   ├── logger.ts             # Utility logging functions
-│   ├── swapUtils.ts          # Swap validation utilities
 │   └── tokenUtils.ts         # Token management utilities
 └── wallets/
     └── web3Wallet.ts         # Web3 wallet implementation
@@ -50,37 +50,45 @@ src/
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 - TypeScript knowledge
 - Coinbase Developer Platform account
 - Environment variables configured
 
-### Installation
+### Running
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/wakeuplabs-io/coinbase-arbitrage-bot.git
    cd coinbase-arbitrage-bot
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
-3. **Configure environment variables**
+3. **Run x402 example**
+
+   You may want to run the [x402 example](https://github.com/coinbase/x402/blob/main/examples/typescript/servers/express/README.md) for demoing purchasing when threshold is reached.
+
+4. **Configure environment variables**
+
    ```bash
    cp .env.example .env
    # Edit .env with your configuration
    ```
 
-4. **Build the project**
+5. **Build the project**
+
    ```bash
    npm run build
    ```
 
-5. **Run the bot**
+6. **Run the bot**
    ```bash
    npm start
    ```
@@ -93,7 +101,7 @@ Create a `.env` file in the root directory:
 
 ```env
 # Network Configuration
-NETWORK_NAME=base
+NETWORK=base
 RPC_URL=https://mainnet.base.org
 
 # Coinbase Developer Platform
@@ -192,7 +200,6 @@ tests/
 ├── services/
 │   └── arbitrageService.test.ts    # Core arbitrage logic tests
 ├── utils/
-│   ├── swapUtils.test.ts           # Swap validation tests
 │   └── tokenUtils.test.ts          # Token utility tests
 └── mocks/
     ├── mockCDPProvider.test.ts     # CDP mock tests
@@ -254,6 +261,7 @@ Getting USDC from DEX...
 ### Coinbase Developer Platform
 
 The bot integrates with CDP for:
+
 - Price estimation
 - Swap execution
 - Account management
@@ -262,6 +270,7 @@ The bot integrates with CDP for:
 ### Decentralized Exchanges
 
 Supports integration with:
+
 - Uniswap V3
 - Custom DEX implementations
 - Configurable swap providers
@@ -305,8 +314,7 @@ The authors are not responsible for any financial losses incurred through the us
 
 - **Issues**: [GitHub Issues](https://github.com/wakeuplabs-io/coinbase-arbitrage-bot/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/wakeuplabs-io/coinbase-arbitrage-bot/discussions)
-- **Documentation**: [Test Documentation](TEST_DOCUMENTATION.md)
 
 ---
 
-Built with ❤️ by [WakeupLabs](https://github.com/wakeuplabs-io)
+Built with ❤️ by [WakeupLabs](https://www.wakeuplabs.io/)

@@ -1,14 +1,10 @@
-import { config } from '../config';
-import { mainnet } from 'viem/chains';
-import { createWalletClient, createPublicClient, http, type Address } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
+import { config, chain, publicClient, account, walletClient } from '../config';
+import { type Address } from 'viem';
 import { abi as quoterAbi } from '@uniswap/v3-periphery/artifacts/contracts/lens/Quoter.sol/Quoter.json';
 import { SwapProvider } from '../interfaces/swapProvider';
 import { abi as swapRouterAbi } from '@uniswap/v3-periphery/artifacts/contracts/SwapRouter.sol/SwapRouter.json';
 import { abi as erc20Abi } from '@uniswap/v2-core/build/ERC20.json';
 import {
-  UNISWAP_V3_SWAP_ROUTER,
-  UNISWAP_V3_QUOTER_ADDRESS,
   UNISWAP_V3_DEFAULT_FEE,
   UNISWAP_V3_MIN_AMOUNT_OUT,
   UNISWAP_V3_SQRT_PRICE_LIMIT,
@@ -23,14 +19,9 @@ export class UniswapProvider implements SwapProvider {
     tokenIn: Address,
     tokenOut: Address,
   ): Promise<bigint | undefined> {
-    const client = createPublicClient({
-      chain: mainnet,
-      transport: http(config.public_node),
-    });
-
-    const quotedAmountOut = await client.readContract({
+    const quotedAmountOut = await publicClient.readContract({
       abi: quoterAbi,
-      address: UNISWAP_V3_QUOTER_ADDRESS,
+      address: config.contracts.uniswapQuoter as `0x${string}`,
       functionName: 'quoteExactInputSingle',
       args: [tokenIn, tokenOut, config.trading.swapFee, amountIn, 0n],
     });
@@ -43,24 +34,26 @@ export class UniswapProvider implements SwapProvider {
     tokenIn: Address,
     tokenOut: Address,
   ): Promise<bigint | undefined> {
-    const account = privateKeyToAccount(config.privateKey as `0x${string}`);
+    // Get balance of output token before swap
+    const balanceBefore = (await publicClient.readContract({
+      abi: erc20Abi,
+      address: tokenOut,
+      functionName: 'balanceOf',
+      args: [account.address],
+    })) as bigint;
 
-    const client = createWalletClient({
-      account,
-      chain: mainnet,
-      transport: http(config.public_node),
-    });
-
-    await client.writeContract({
+    // Approve the router to spend input tokens
+    await walletClient.writeContract({
       abi: erc20Abi,
       address: tokenIn,
       functionName: 'approve',
-      args: [UNISWAP_V3_SWAP_ROUTER, amountIn],
+      args: [config.contracts.uniswapRouter as `0x${string}`, amountIn],
     });
 
-    const _swapResult = await client.writeContract({
+    // Execute the swap
+    const swapHash = await walletClient.writeContract({
       abi: swapRouterAbi,
-      address: UNISWAP_V3_SWAP_ROUTER,
+      address: config.contracts.uniswapRouter as `0x${string}`,
       functionName: 'exactInputSingle',
       args: [
         {
@@ -76,6 +69,22 @@ export class UniswapProvider implements SwapProvider {
       ],
     });
 
-    return 0n;
+    // Wait for transaction to be mined
+    await publicClient.waitForTransactionReceipt({
+      hash: swapHash,
+      confirmations: 1,
+    });
+
+    // Get balance of output token after swap. Ideally we get this from swap events, this is a simplification that works for now.
+    const balanceAfter = (await publicClient.readContract({
+      abi: erc20Abi,
+      address: tokenOut,
+      functionName: 'balanceOf',
+      args: [account.address],
+    })) as bigint;
+
+    // Return the amount received
+    const amountOut = balanceAfter - balanceBefore;
+    return amountOut > 0n ? amountOut : undefined;
   }
 }

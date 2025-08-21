@@ -10,20 +10,17 @@
 import { config } from './config';
 import { SwapProvider } from './interfaces/swapProvider';
 import { ContentPayment } from './interfaces/contentPayment';
-import { Wallet } from './interfaces/wallet';
 import { ArbitrageLogger } from './services/arbitrageLogger';
 
 // Mock implementations
 import { MockCDPProvider } from './mocks/mockCDPProvider';
 import { MockUniswapProvider } from './mocks/mockUniswapProvider';
 import { MockPayment } from './mocks/mockPayment';
-import { MockWallet } from './mocks/mockWallet';
 
 // Production implementations
 import { CDPProvider } from './providers/cdp';
 import { CustomDEXProvider } from './providers/customDEX';
 import { x402FetchBuyer } from './buyers/x402FetchBuyer';
-import { Web3Wallet } from './wallets/web3Wallet';
 
 /**
  * Application dependencies interface for type safety
@@ -32,7 +29,6 @@ export interface AppDependencies {
   cdpProvider: SwapProvider;
   customDEXProvider: SwapProvider;
   buyer: ContentPayment;
-  wallet: Wallet;
 }
 
 /**
@@ -42,7 +38,6 @@ export interface DependencyFactory {
   createCDPProvider(): SwapProvider;
   createCustomDEXProvider(): SwapProvider;
   createBuyer(): ContentPayment;
-  createWallet(): Wallet;
 }
 
 /**
@@ -60,10 +55,6 @@ export class MockDependencyFactory implements DependencyFactory {
   createBuyer(): ContentPayment {
     return new MockPayment();
   }
-
-  createWallet(): Wallet {
-    return new MockWallet();
-  }
 }
 
 /**
@@ -80,10 +71,6 @@ export class ProductionDependencyFactory implements DependencyFactory {
 
   createBuyer(): ContentPayment {
     return new x402FetchBuyer();
-  }
-
-  createWallet(): Wallet {
-    return new Web3Wallet();
   }
 }
 
@@ -107,7 +94,6 @@ export class Container {
         cdpProvider: this.factory.createCDPProvider(),
         customDEXProvider: this.factory.createCustomDEXProvider(),
         buyer: this.factory.createBuyer(),
-        wallet: this.factory.createWallet(),
       };
     }
     return this.dependencies;

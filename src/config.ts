@@ -10,6 +10,9 @@
 
 import dotenv from 'dotenv';
 import { z } from 'zod';
+import { base, mainnet } from 'viem/chains';
+import { privateKeyToAccount } from 'viem/accounts';
+import { createPublicClient, createWalletClient, http } from 'viem';
 
 dotenv.config();
 
@@ -58,7 +61,10 @@ const configSchema = z.object({
   }),
 
   network: z.object({
-    name: z.string().min(1, 'Network name is required'),
+    name: z.enum(['base', 'ethereum'], {
+      invalid_type_error: 'Network name must be either base or ethereum',
+      required_error: 'Network name is required',
+    }),
   }),
 
   x402: z.object({
@@ -84,7 +90,6 @@ const rawConfig = {
   cdp: {
     apiKeyId: process.env.CDP_API_KEY_ID || '',
     apiKeySecret: process.env.CDP_API_KEY_SECRET || '',
-    walletSecret: process.env.CDP_WALLET_SECRET || '',
   },
 
   tokens: {
@@ -153,3 +158,18 @@ function createConfig(): Config {
  * Validated at runtime using Zod for type safety and data integrity.
  */
 export const config = createConfig();
+
+export const chain = config.network.name === 'base' ? base : mainnet;
+
+export const account = privateKeyToAccount(config.privateKey as `0x${string}`);
+
+export const walletClient = createWalletClient({
+  account,
+  chain,
+  transport: http(config.public_node),
+});
+
+export const publicClient = createPublicClient({
+  chain,
+  transport: http(config.public_node),
+});
