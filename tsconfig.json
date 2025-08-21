@@ -9,5 +9,7 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "outDir": "dist"
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["tests/**/*", "**/*.test.ts", "**/*.spec.ts", "**/*.test.js", "**/*.spec.js"]
 }
