@@ -12,7 +12,6 @@
  * @version 1.0.0
  */
 
-import { config } from './config';
 import { container } from './container';
 import { ArbitrageService } from './services/arbitrageService';
 import { ArbitrageLogger } from './services/arbitrageLogger';

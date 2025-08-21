@@ -4,6 +4,15 @@ import { type Address } from 'viem';
 import { SwapProvider } from '../interfaces/swapProvider';
 import { handleTokenAllowance, waitForReceipt } from '../utils/tokenUtils';
 
+interface SwapQuote {
+  liquidityAvailable: boolean;
+  toAmount: bigint;
+  issues?: {
+    balance?: unknown;
+    allowance?: unknown;
+  };
+}
+
 export class CDPProvider implements SwapProvider {
   readonly name = 'CDP';
 
@@ -67,7 +76,7 @@ export class CDPProvider implements SwapProvider {
     return swapQuote.toAmount;
   }
 
-  validateSwapQuote(swapQuote: any): boolean {
+  validateSwapQuote(swapQuote: SwapQuote): boolean {
     // Handle undefined/null input
     if (!swapQuote) {
       return true;
@@ -87,5 +96,4 @@ export class CDPProvider implements SwapProvider {
 
     return isValid;
   }
-
 }
