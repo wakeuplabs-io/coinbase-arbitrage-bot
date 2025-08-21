@@ -1,5 +1,4 @@
-import { config } from '../config';
-import { mainnet } from 'viem/chains';
+import { config, chain } from '../config';
 import { createWalletClient, createPublicClient, http, type Address } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { abi as quoterAbi } from '@uniswap/v3-periphery/artifacts/contracts/lens/Quoter.sol/Quoter.json';
@@ -22,7 +21,7 @@ export class UniswapProvider implements SwapProvider {
     tokenOut: Address,
   ): Promise<bigint | undefined> {
     const client = createPublicClient({
-      chain: mainnet,
+      chain,
       transport: http(config.public_node),
     });
 
@@ -45,7 +44,7 @@ export class UniswapProvider implements SwapProvider {
 
     const client = createWalletClient({
       account,
-      chain: mainnet,
+      chain,
       transport: http(config.public_node),
     });
 

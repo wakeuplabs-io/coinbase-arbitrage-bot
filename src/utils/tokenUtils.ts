@@ -11,10 +11,9 @@
  * @module tokenUtils
  */
 
-import { config } from '../config';
+import { config, chain } from '../config';
 import { CdpClient } from '@coinbase/cdp-sdk';
 import { createPublicClient, http, erc20Abi, encodeFunctionData, type Address } from 'viem';
-import { base, mainnet } from 'viem/chains';
 
 /**
  * Token configuration interface
@@ -120,8 +119,8 @@ export class TokenUtils {
 }
 
 export const publicClient = createPublicClient({
-  chain: config.network.name === 'base' ? base : mainnet,
-  transport: http(),
+  chain,
+  transport: http(config.public_node),
 });
 
 /**

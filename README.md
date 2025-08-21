@@ -101,7 +101,7 @@ Create a `.env` file in the root directory:
 
 ```env
 # Network Configuration
-NETWORK_NAME=base
+NETWORK=base
 RPC_URL=https://mainnet.base.org
 
 # Coinbase Developer Platform

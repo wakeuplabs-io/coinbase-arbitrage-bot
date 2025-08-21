@@ -10,6 +10,7 @@
 
 import dotenv from 'dotenv';
 import { z } from 'zod';
+import { base, mainnet } from 'viem/chains';
 
 dotenv.config();
 
@@ -58,7 +59,10 @@ const configSchema = z.object({
   }),
 
   network: z.object({
-    name: z.string().min(1, 'Network name is required'),
+    name: z.enum(['base', 'ethereum'], {
+      invalid_type_error: 'Network name must be either base or ethereum',
+      required_error: 'Network name is required',
+    }),
   }),
 
   x402: z.object({
@@ -152,3 +156,5 @@ function createConfig(): Config {
  * Validated at runtime using Zod for type safety and data integrity.
  */
 export const config = createConfig();
+
+export const chain = config.network.name === 'base' ? base : mainnet;
