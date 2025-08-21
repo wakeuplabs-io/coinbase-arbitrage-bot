@@ -2,7 +2,6 @@ import { ArbitrageService } from '../../src/services/arbitrageService';
 import { AppDependencies } from '../../src/container';
 import { SwapProvider } from '../../src/interfaces/swapProvider';
 import { ContentPayment } from '../../src/interfaces/contentPayment';
-import { Wallet } from '../../src/interfaces/wallet';
 import { parseUnits } from 'viem';
 
 // Mock the config module
@@ -62,7 +61,6 @@ describe('ArbitrageService', () => {
   let mockCDPProvider: jest.Mocked<SwapProvider>;
   let mockCustomDEXProvider: jest.Mocked<SwapProvider>;
   let mockBuyer: jest.Mocked<ContentPayment>;
-  let mockWallet: jest.Mocked<Wallet>;
 
   beforeEach(() => {
     // Create mock implementations
@@ -82,15 +80,10 @@ describe('ArbitrageService', () => {
       buyContent: jest.fn(),
     };
 
-    mockWallet = {
-      getBalance: jest.fn(),
-    };
-
     mockDependencies = {
       cdpProvider: mockCDPProvider,
       customDEXProvider: mockCustomDEXProvider,
       buyer: mockBuyer,
-      wallet: mockWallet,
     };
 
     arbitrageService = new ArbitrageService(mockDependencies);
