@@ -11,6 +11,8 @@
 import dotenv from 'dotenv';
 import { z } from 'zod';
 import { base, mainnet } from 'viem/chains';
+import { privateKeyToAccount } from 'viem/accounts';
+import { createPublicClient, createWalletClient, http } from 'viem';
 
 dotenv.config();
 
@@ -158,3 +160,16 @@ function createConfig(): Config {
 export const config = createConfig();
 
 export const chain = config.network.name === 'base' ? base : mainnet;
+
+export const account = privateKeyToAccount(config.privateKey as `0x${string}`);
+
+export const walletClient = createWalletClient({
+  account,
+  chain,
+  transport: http(config.public_node),
+});
+
+export const publicClient = createPublicClient({
+  chain,
+  transport: http(config.public_node),
+});

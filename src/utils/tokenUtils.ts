@@ -11,9 +11,10 @@
  * @module tokenUtils
  */
 
-import { config, chain } from '../config';
+import { config } from '../config';
 import { CdpClient } from '@coinbase/cdp-sdk';
-import { createPublicClient, http, erc20Abi, encodeFunctionData, type Address } from 'viem';
+import { erc20Abi, encodeFunctionData, type Address } from 'viem';
+import { publicClient } from '../config';
 
 /**
  * Token configuration interface
@@ -117,11 +118,6 @@ export class TokenUtils {
     return { ...TOKENS };
   }
 }
-
-export const publicClient = createPublicClient({
-  chain,
-  transport: http(config.public_node),
-});
 
 /**
  * Waits for the transaction receipt of a given transaction hash.
