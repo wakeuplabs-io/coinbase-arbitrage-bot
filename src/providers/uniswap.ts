@@ -7,8 +7,6 @@ import { SwapProvider } from '../interfaces/swapProvider';
 import { abi as swapRouterAbi } from '@uniswap/v3-periphery/artifacts/contracts/SwapRouter.sol/SwapRouter.json';
 import { abi as erc20Abi } from '@uniswap/v2-core/build/ERC20.json';
 import {
-  UNISWAP_V3_SWAP_ROUTER,
-  UNISWAP_V3_QUOTER_ADDRESS,
   UNISWAP_V3_DEFAULT_FEE,
   UNISWAP_V3_MIN_AMOUNT_OUT,
   UNISWAP_V3_SQRT_PRICE_LIMIT,
@@ -30,7 +28,7 @@ export class UniswapProvider implements SwapProvider {
 
     const quotedAmountOut = await client.readContract({
       abi: quoterAbi,
-      address: UNISWAP_V3_QUOTER_ADDRESS,
+      address: config.contracts.uniswapQuoter as `0x${string}`,
       functionName: 'quoteExactInputSingle',
       args: [tokenIn, tokenOut, config.trading.swapFee, amountIn, 0n],
     });
@@ -55,12 +53,12 @@ export class UniswapProvider implements SwapProvider {
       abi: erc20Abi,
       address: tokenIn,
       functionName: 'approve',
-      args: [UNISWAP_V3_SWAP_ROUTER, amountIn],
+      args: [config.contracts.uniswapRouter as `0x${string}`, amountIn],
     });
 
     await client.writeContract({
       abi: swapRouterAbi,
-      address: UNISWAP_V3_SWAP_ROUTER,
+      address: config.contracts.uniswapRouter as `0x${string}`,
       functionName: 'exactInputSingle',
       args: [
         {
