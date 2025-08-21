@@ -117,7 +117,7 @@ describe('ArbitrageService', () => {
 
   describe('arbitrage detection', () => {
     test('should detect profitable arbitrage opportunity', async () => {
-      const inputAmount = parseUnits('10', 6); // 10 USDC
+      const inputAmount = parseUnits('10', 6);
       const wethOutput = parseUnits('0.004', 18); // 0.004 WETH
       const finalOutput = parseUnits('11', 6); // 11 USDC (1 USDC profit)
 
@@ -145,7 +145,6 @@ describe('ArbitrageService', () => {
     });
 
     test('should not execute trade when profit is below threshold', async () => {
-      const inputAmount = parseUnits('10', 6);
       const wethOutput = parseUnits('0.004', 18);
       const finalOutput = parseUnits('10.1', 6); // Only 0.1 USDC profit (below 0.5 threshold)
 
@@ -162,7 +161,6 @@ describe('ArbitrageService', () => {
     });
 
     test('should execute trade when profit exceeds threshold', async () => {
-      const inputAmount = parseUnits('10', 6);
       const wethOutput = parseUnits('0.004', 18);
       const finalOutput = parseUnits('11', 6); // 1 USDC profit (above 0.5 threshold)
 
@@ -192,7 +190,6 @@ describe('ArbitrageService', () => {
     });
 
     test('should track transaction count and session profit', async () => {
-      const inputAmount = parseUnits('10', 6);
       const wethOutput = parseUnits('0.004', 18);
       const finalOutput = parseUnits('11', 6); // 1 USDC profit
 
@@ -240,7 +237,6 @@ describe('ArbitrageService', () => {
     });
 
     test('should handle swap execution errors gracefully', async () => {
-      const inputAmount = parseUnits('10', 6);
       const wethOutput = parseUnits('0.004', 18);
       const finalOutput = parseUnits('11', 6);
 
@@ -261,7 +257,6 @@ describe('ArbitrageService', () => {
   describe('x402 payment integration', () => {
     test('should execute x402 payment when target is reached', async () => {
       // Set up a scenario where session profit reaches target (100 USDC)
-      const inputAmount = parseUnits('10', 6);
       const wethOutput = parseUnits('0.004', 18);
       const finalOutput = parseUnits('110', 6); // 100 USDC profit to reach target
 

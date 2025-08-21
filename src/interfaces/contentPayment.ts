@@ -17,5 +17,5 @@ export interface ContentPayment {
    * @param url - The URL of the premium content to purchase
    * @returns Promise resolving to the content data, or undefined if purchase fails
    */
-  buyContent(url: string): Promise<string | undefined>;
+  buyContent(url: string): Promise<unknown>;
 }

@@ -128,7 +128,7 @@ export class ArbitrageService {
       const shouldExecute = netProfit >= profitThresholdAmount;
 
       if (shouldExecute) {
-        await this.executeTrade(inputAmount, wethFromCDP, usdcFromDEX, netProfit);
+        await this.executeTrade(inputAmount);
       }
 
       this.logger.logTradeOpportunity(
@@ -159,12 +159,7 @@ export class ArbitrageService {
   /**
    * Execute the actual trade
    */
-  private async executeTrade(
-    inputAmount: bigint,
-    wethAmount: bigint,
-    expectedOutput: bigint,
-    expectedProfit: bigint,
-  ): Promise<void> {
+  private async executeTrade(inputAmount: bigint): Promise<void> {
     try {
       this.logger.logTradeExecution();
 
@@ -211,7 +206,7 @@ export class ArbitrageService {
       const x402Result = await this.dependencies.buyer.buyContent(config.x402.paymentUrl);
 
       if (x402Result) {
-        this.logger.logX402PaymentSuccess(x402Result);
+        this.logger.logX402PaymentSuccess(x402Result as string);
       } else {
         this.logger.logX402PaymentWarning('Payment completed but no content received');
       }

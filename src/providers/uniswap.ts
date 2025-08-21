@@ -58,7 +58,7 @@ export class UniswapProvider implements SwapProvider {
       args: [UNISWAP_V3_SWAP_ROUTER, amountIn],
     });
 
-    const _swapResult = await client.writeContract({
+    await client.writeContract({
       abi: swapRouterAbi,
       address: UNISWAP_V3_SWAP_ROUTER,
       functionName: 'exactInputSingle',
