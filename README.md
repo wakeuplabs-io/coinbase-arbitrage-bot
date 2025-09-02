@@ -2,6 +2,19 @@
 
 A sophisticated TypeScript-based arbitrage trading bot that identifies and executes profitable trades between Coinbase Developer Platform (CDP) and decentralized exchanges (DEX). The bot automatically detects price discrepancies, executes trades when profit thresholds are met, and includes x402 payment integration for premium content access.
 
+---
+
+## 🎥 Explainer Videos
+
+- **Marketing Video**: [Watch here](https://www.youtube.com/watch?v=_MaYqdo5fo0)  
+  A clear and accessible introduction to the value and potential of the bot.
+
+- **Technical Video**: [Watch technical walkthrough](https://www.youtube.com/watch?v=HxcdqXHrC2s)  
+  Step-by-step explanation of the flow, CDP integration, and how the bot executes arbitrage opportunities.
+
+---
+
+
 ## ✨ Features
 
 - **Automated Arbitrage Detection**: Real-time price monitoring across CDP and DEX platforms
