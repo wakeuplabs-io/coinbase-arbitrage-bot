@@ -14,7 +14,6 @@ A sophisticated TypeScript-based arbitrage trading bot that identifies and execu
 
 ---
 
-
 ## ✨ Features
 
 - **Automated Arbitrage Detection**: Real-time price monitoring across CDP and DEX platforms
@@ -63,7 +62,7 @@ src/
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 22+
 - npm or yarn
 - TypeScript knowledge
 - Coinbase Developer Platform account

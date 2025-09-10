@@ -9,10 +9,10 @@
  */
 
 import dotenv from 'dotenv';
-import { z } from 'zod';
-import { base, mainnet } from 'viem/chains';
-import { privateKeyToAccount } from 'viem/accounts';
 import { createPublicClient, createWalletClient, http } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
+import { base, mainnet } from 'viem/chains';
+import { z } from 'zod';
 
 dotenv.config();
 
@@ -29,7 +29,6 @@ const configSchema = z.object({
   cdp: z.object({
     apiKeyId: z.string().min(1, 'CDP API key ID is required'),
     apiKeySecret: z.string().min(1, 'CDP API key secret is required'),
-    walletSecret: z.string().min(1, 'CDP wallet secret is required'),
   }),
 
   tokens: z.object({
